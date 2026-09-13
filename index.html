@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数学抽背 · 湘教版七上第一单元（语音版）</title>
+<style>
+  :root{
+    --bg:#eef2f9; --card:#fff; --primary:#2563eb;
+    --green:#16a34a; --red:#dc2626;
+    --text:#1e293b; --muted:#64748b; --line:#e2e8f0;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0; padding:14px;
+    font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.6;
+  }
+  .app{max-width:680px;margin:0 auto;}
+  header h1{font-size:20px;margin:6px 0 2px;}
+  header .sub{margin:0;font-size:13px;color:var(--muted);}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0;}
+  .chip{
+    border:1px solid var(--line); background:#fff; color:var(--muted);
+    padding:6px 12px; border-radius:999px; font-size:13px;
+    cursor:pointer; transition:.15s;
+  }
+  .chip.active{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:600;}
+  .card{
+    background:var(--card); border-radius:16px; padding:18px;
+    box-shadow:0 6px 20px rgba(30,41,59,.07);
+    min-height:190px; display:flex; flex-direction:column; cursor:pointer;
+  }
+  .meta{
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:12px; color:var(--muted); margin-bottom:12px;
+  }
+  .tag{background:#eff6ff;color:#2563eb;padding:3px 10px;border-radius:999px;font-weight:600;}
+  .q{font-size:19px;font-weight:600;line-height:1.7;flex:1;word-break:break-word;}
+  .a{
+    margin-top:16px; padding-top:14px; border-top:1px dashed var(--line);
+    font-size:17px; color:#047857; line-height:1.8; word-break:break-word;
+    animation:fade .18s ease;
+  }
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .toolbar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px;}
+  .toolbar button{
+    border:0;border-radius:12px;padding:13px 8px;
+    font-size:15px;font-weight:600;color:#fff;cursor:pointer;transition:.15s;
+  }
+  .toolbar button:active{transform:scale(.97);}
+  .primary{background:var(--primary);}
+  .green{background:var(--green);}
+  .red{background:var(--red);}
+
+  /* ★ 改动 1：row2 从两列改为三列，容纳「上一题」 */
+  .row2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px;}
+
+  .ghost{
+    background:#fff;border:1px solid var(--line);color:var(--muted);
+    border-radius:12px;padding:11px;font-size:14px;cursor:pointer;transition:.15s;
+  }
+  .ghost.active{background:#fee2e2;border-color:#fca5a5;color:#b91c1c;font-weight:600;}
+  .ghost:disabled{opacity:.4;cursor:not-allowed;}
+
+  .voiceBar{display:flex;gap:8px;margin-top:8px;align-items:stretch;}
+  .vbtn{
+    flex:1;padding:11px;border-radius:12px;border:1px solid var(--line);
+    background:#fff;color:var(--muted);font-size:14px;font-weight:600;
+    cursor:pointer;transition:.15s;
+  }
+  .vbtn.active{background:#dbeafe;border-color:#93c5fd;color:#1d4ed8;}
+  .vbtn:active{transform:scale(.97);}
+  #rateSel{
+    flex:0 0 92px;padding:11px 8px;border-radius:12px;
+    border:1px solid var(--line);background:#fff;
+    color:var(--muted);font-size:14px;
+  }
+
+  .stats{text-align:center;font-size:13px;color:var(--muted);margin:16px 0 8px;}
+  .wrongBox{
+    background:#fff;border-radius:14px;padding:14px 16px;
+    box-shadow:0 6px 20px rgba(30,41,59,.06);
+  }
+  .wrongBox summary{cursor:pointer;font-weight:600;font-size:15px;outline:none;}
+  .wrongBox ul{list-style:none;padding:0;margin:12px 0 0;}
+  .wrongBox li{
+    padding:10px 0;border-top:1px solid var(--line);
+    display:flex;gap:10px;align-items:flex-start;
+  }
+  .wrongBox li:first-child{border-top:0;}
+  .wi{flex:1;font-size:14px;}
+  .wq{font-weight:600;}
+  .wa{color:var(--muted);font-size:13px;margin-top:2px;}
+  .mini{
+    border:0;background:#fee2e2;color:#b91c1c;padding:5px 10px;
+    border-radius:8px;font-size:12px;cursor:pointer;flex-shrink:0;
+  }
+  .empty{color:var(--muted);font-size:13px;justify-content:center;}
+  .tip{text-align:center;font-size:12px;color:#94a3b8;margin:14px 0 4px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>数学抽背 · 语音版</h1>
+    <p class="sub">湘教版 · 七年级上册 · 第一单元</p>
+  </header>
+
+  <div class="chips" id="chips"></div>
+
+  <div class="card" id="card">
+    <div class="meta">
+      <span class="tag" id="tag">—</span>
+      <span id="progress"></span>
+    </div>
+    <div class="q" id="q">点击下方「下一题」开始抽背</div>
+    <div class="a" id="a" hidden></div>
+  </div>
+
+  <div class="toolbar">
+    <button class="primary" id="btnShow">显示答案</button>
+    <button class="green" id="btnKnown">会了 ✓</button>
+    <button class="red" id="btnUnknown">不熟 ✗</button>
+  </div>
+
+  <!-- ★ 改动 2：在按钮组里新增「← 上一题」 -->
+  <div class="row2">
+    <button class="ghost" id="btnPrev">← 上一题</button>
+    <button class="ghost" id="btnNext">下一题 →</button>
+    <button class="ghost" id="btnWrongMode">只抽不熟</button>
+  </div>
+
+  <div class="voiceBar">
+    <button class="vbtn active" id="btnVoice">🔊 语音开</button>
+    <select id="rateSel">
+      <option value="0.8">慢速</option>
+      <option value="1" selected>正常</option>
+      <option value="1.25">快速</option>
+    </select>
+    <button class="vbtn" id="btnRepeat">🔁 重听</button>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <details class="wrongBox">
+    <summary>不熟清单 <span id="wrongCount"></span></summary>
+    <ul id="wrongList"></ul>
+  </details>
+
+  <p class="tip">空格显示答案 · 1 会了 · 2 不熟 · 点卡片也能看答案</p>
+</div>
+
+<script>
+/* ==================== 题库 ==================== */
+const BANK = [
+  /* ---------- 认识负数 ---------- */
+  {chap:"认识负数", q:"什么是负数？举出三个例子。", a:"在正数前面加上“-”号的数叫做负数，如 -1、-2.5、-100。负数都比 0 小。"},
+  {chap:"认识负数", q:"0 是正数还是负数？", a:"0 既不是正数，也不是负数，它是正数和负数的分界。"},
+  {chap:"认识负数", q:"判断：一个数不是正数就是负数。", a:"错误。0 既不是正数也不是负数。"},
+  {chap:"认识负数", q:"-a 一定是负数吗？", a:"不一定。a 大于 0 时 -a 是负数；a 等于 0 时 -a 等于 0；a 小于 0 时 -a 是正数。"},
+  {chap:"认识负数", q:"向东走 8 米记作 +8 米，那么向西走 5 米记作什么？", a:"-5 米"},
+  {chap:"认识负数", q:"零上 5 摄氏度记作 +5 摄氏度，那么零下 3 摄氏度记作什么？", a:"-3 摄氏度"},
+  {chap:"认识负数", q:"收入 200 元记作 +200 元，那么支出 80 元记作什么？", a:"-80 元"},
+  {chap:"认识负数", q:"水位上升 0.5 米记作 +0.5 米，那么 -0.3 米表示什么？", a:"水位下降 0.3 米"},
+  {chap:"认识负数", q:"盈利 100 元记作 +100 元，那么 -50 元表示什么？", a:"亏损 50 元"},
+  {chap:"认识负数", q:"向北走 -6 米的实际意义是什么？", a:"向南走 6 米"},
+  {chap:"认识负数", q:"正数、0、负数的大小关系是什么？", a:"正数大于 0，0 大于负数。"},
+  {chap:"认识负数", q:"在 -2、0、3.5、-1/2、-7 中，哪些是负数？", a:"-2、-1/2、-7 是负数。"},
+  {chap:"认识负数", q:"食品包装上标“净重 500 ± 5 克”，表示什么意思？", a:"每袋食品的质量在 495 克到 505 克之间。"},
+  {chap:"认识负数", q:"某天最高气温 3 摄氏度，最低气温 -5 摄氏度，这天的温差是多少？", a:"3 减 -5 等于 8，温差是 8 摄氏度。"},
+
+  /* ---------- 有理数（新增） ---------- */
+  {chap:"有理数", q:"什么是有理数？", a:"整数和分数统称有理数。"},
+  {chap:"有理数", q:"有理数可以怎样分类？", a:"有两种分类方法。按定义分：整数和分数；按符号分：正有理数、0、负有理数。"},
+  {chap:"有理数", q:"整数包括哪些数？", a:"正整数、0、负整数统称整数。"},
+  {chap:"有理数", q:"分数包括哪些数？", a:"正分数和负分数统称分数。"},
+  {chap:"有理数", q:"0 是有理数吗？", a:"是。0 是整数，整数属于有理数，所以 0 是有理数。"},
+  {chap:"有理数", q:"判断：一个有理数不是整数就是分数。", a:"正确。有理数按定义分为整数和分数两大类。"},
+  {chap:"有理数", q:"-3.5 是有理数吗？为什么？", a:"是。因为 -3.5 是负分数，而分数是有理数。"},
+  {chap:"有理数", q:"正有理数包括哪些数？", a:"正整数和正分数。"},
+  {chap:"有理数", q:"负有理数包括哪些数？", a:"负整数和负分数。"},
+  {chap:"有理数", q:"有理数按符号分类分为哪几类？", a:"三类：正有理数、0、负有理数。"},
+  {chap:"有理数", q:"判断：0 是正有理数。", a:"错误。0 既不是正有理数，也不是负有理数。"},
+  {chap:"有理数", q:"最小的正整数是几？最大的负整数是几？", a:"最小的正整数是 1，最大的负整数是 -1。"},
+  {chap:"有理数", q:"有没有最小的整数？有没有最小的有理数？", a:"都没有。整数和有理数都可以无限小，没有最小值。"},
+  {chap:"有理数", q:"有限小数和无限循环小数是有理数吗？", a:"是。它们都可以化成分数，所以是有理数。"},
+  {chap:"有理数", q:"圆周率 π 是有理数吗？", a:"不是。π 是无限不循环小数，不能化成分数，不是有理数。"},
+  {chap:"有理数", q:"在 -7、0、3.14、-1/3、π、-0.5 中，哪些是有理数？", a:"-7、0、3.14、-1/3、-0.5 是有理数；π 不是有理数。"},
+  {chap:"有理数", q:"有理数与数轴上的点有什么关系？", a:"每个有理数都可以用数轴上的一个点来表示；但数轴上的点不一定都表示有理数。"},
+  {chap:"有理数", q:"自然数、整数、有理数三者之间有什么关系？", a:"自然数包含 0 和正整数；整数包含自然数和负整数；有理数包含整数和分数，范围依次扩大。"},
+  {chap:"有理数", q:"把 -3、+2.5、0、7、-1 分类：哪些是整数？哪些是分数？", a:"整数：-3、0、7、-1；分数：+2.5。"},
+  {chap:"有理数", q:"把 -3、+2.5、0、7、-1 分类：哪些是正有理数？哪些是负有理数？", a:"正有理数：+2.5、7；负有理数：-3、-1；0 既不是正有理数也不是负有理数。"},
+  {chap:"有理数", q:"下列说法正确的是：A. 有理数不是正数就是负数；B. 0 是最小的有理数；C. 整数和分数统称有理数。", a:"选 C。A 错在漏了 0；B 错在没有最小的有理数。"},
+  {chap:"有理数", q:"什么是非负数？什么是非正数？", a:"非负数指正数和 0；非正数指负数和 0。"},
+  {chap:"有理数", q:"判断：无限小数都是无理数。", a:"错误。无限循环小数是有理数，只有无限不循环小数才是无理数。"},
+  {chap:"有理数", q:"把下列各数填入相应的集合：-5、3.2、0、-2/7、-1、9。正整数集合、负分数集合分别有哪些？", a:"正整数：9；负分数：-2/7。其余 -5、-1 是负整数，3.2 是正分数，0 既不是正数也不是负数。"},
+
+  /* ---------- 数轴 ---------- */
+  {chap:"数轴", q:"什么是数轴？", a:"规定了原点、正方向、单位长度的直线叫做数轴。"},
+  {chap:"数轴", q:"数轴的三要素是什么？", a:"原点、正方向、单位长度。"},
+  {chap:"数轴", q:"画数轴时三要素可以缺少吗？", a:"不可以。原点、正方向、单位长度缺一不可。"},
+  {chap:"数轴", q:"所有的有理数都能用数轴上的点表示吗？", a:"能。每个有理数都可以用数轴上唯一的一个点来表示。"},
+  {chap:"数轴", q:"数轴上表示 -3 的点在原点的哪一边？离原点几个单位长度？", a:"在原点左边，距离原点 3 个单位长度。"},
+  {chap:"数轴", q:"数轴上，右边的数总比左边的数怎么样？", a:"右边的数总比左边的数大。"},
+  {chap:"数轴", q:"数轴上到原点距离等于 3 的点表示哪些数？", a:"3 和 -3。"},
+  {chap:"数轴", q:"比较大小：-4 和 -1 谁大？", a:"-4 小于 -1。在数轴上 -1 在 -4 的右边。"},
+  {chap:"数轴", q:"数轴上点 A 表示 -2，把它向右移动 5 个单位长度后表示什么数？", a:"-2 加 5 等于 3，表示 3。"},
+  {chap:"数轴", q:"数轴上点 B 表示 3，把它向左移动 4 个单位长度后表示什么数？", a:"3 减 4 等于 -1，表示 -1。"},
+  {chap:"数轴", q:"数轴上表示-1/2的点在原点的左边还是右边？", a:"左边。因为-1/2小于 0。"},
+  {chap:"数轴", q:"数轴上的原点表示哪个数？", a:"0"},
+
+  /* ---------- 相反数 ---------- */
+  {chap:"相反数", q:"什么是相反数？", a:"只有符号不同的两个数叫做互为相反数。"},
+  {chap:"相反数", q:"0 的相反数是多少？", a:"0"},
+  {chap:"相反数", q:"-5 的相反数是多少？", a:"5"},
+  {chap:"相反数", q:"字母 a 的相反数怎么表示？", a:"-a"},
+  {chap:"相反数", q:"-(-3) 等于多少？", a:"3"},
+  {chap:"相反数", q:"互为相反数的两个数在数轴上的位置有什么关系？", a:"分别位于原点两侧，并且到原点的距离相等。"},
+  {chap:"相反数", q:"若 a、b 互为相反数，则 a 加 b 等于多少？", a:"0"},
+  {chap:"相反数", q:"相反数等于它本身的数是哪个？", a:"0"},
+  {chap:"相反数", q:"一个数的相反数是 -8，这个数是多少？", a:"8"},
+  {chap:"相反数", q:"判断：符号不同的两个数互为相反数。", a:"错误。必须是只有符号不同。比如 正3 和 负5 符号不同，但不是相反数。"},
+  {chap:"相反数", q:"化简：+(-6) 等于多少？", a:"-6"},
+  {chap:"相反数", q:"化简：-(-(+3)) 等于多少？", a:"3"},
+
+  /* ---------- 绝对值 ---------- */
+  {chap:"绝对值", q:"什么是一个数的绝对值？", a:"数轴上表示数 a 的点与原点的距离叫做数 a 的绝对值，记作 a 的绝对值。"},
+  {chap:"绝对值", q:"5 的绝对值和 -5 的绝对值分别等于多少？", a:"都等于 5。"},
+  {chap:"绝对值", q:"0 的绝对值等于多少？", a:"0"},
+  {chap:"绝对值", q:"正数的绝对值是什么？", a:"正数的绝对值是它本身。"},
+  {chap:"绝对值", q:"负数的绝对值是什么？", a:"负数的绝对值是它的相反数。"},
+  {chap:"绝对值", q:"绝对值等于 3 的数有哪些？", a:"3 和 -3。"},
+  {chap:"绝对值", q:"a 的绝对值的取值范围是什么？", a:"大于等于 0，绝对值一定是非负数。"},
+  {chap:"绝对值", q:"若 x 的绝对值等于 7，则 x 等于多少？", a:"x 等于 7 或 x 等于 -7。"},
+  {chap:"绝对值", q:"判断：-3 的绝对值等于 -3。", a:"错误。-3 的绝对值等于 3，绝对值不可能是负数。"},
+  {chap:"绝对值", q:"计算：-2 的绝对值 加 3 的绝对值 等于多少？", a:"2 加 3 等于 5。"},
+  {chap:"绝对值", q:"计算：-5 的绝对值 减 -2 的绝对值 等于多少？", a:"5 减 2 等于 3。"},
+  {chap:"绝对值", q:"计算：-6 的绝对值 乘 2 的绝对值 等于多少？", a:"6 乘 2 等于 12。"},
+  {chap:"绝对值", q:"若 a 的绝对值等于 a，则 a 是什么数？", a:"非负数，即 a 大于等于 0。"},
+  {chap:"绝对值", q:"若 a 的绝对值等于 -a，则 a 是什么数？", a:"非正数，即 a 小于等于 0。"},
+  {chap:"绝对值", q:"绝对值最小的数是多少？", a:"0"},
+  {chap:"绝对值", q:"两个负数怎样比较大小？", a:"两个负数比较大小，绝对值大的反而小。"},
+  {chap:"绝对值", q:"比较 -3/4 和 -5/4 的大小。", a:" -3/4 大于 -5/4。"},
+
+  /* ---------- 有理数的加法 ---------- */
+  {chap:"有理数的加法", q:"同号两数相加的法则是什么？", a:"取相同的符号，并把绝对值相加。"},
+  {chap:"有理数的加法", q:"异号两数相加的法则是什么？", a:"绝对值相等时和为 0；绝对值不相等时，取绝对值较大的加数的符号，并用较大的绝对值减去较小的绝对值。"},
+  {chap:"有理数的加法", q:"一个数同 0 相加，结果是什么？", a:"仍得这个数。"},
+  {chap:"有理数的加法", q:"（-3） +（-5） 等于多少？", a:"-8。同号相加，取负号，3 加 5 等于 8。"},
+  {chap:"有理数的加法", q:"（-3） + 5 等于多少？", a:"2。异号相加，取正号，5 减 3 等于 2。"},
+  {chap:"有理数的加法", q:"3 +（-5） 等于多少？", a:"-2。异号相加，取负号，5 减 3 等于 2。"},
+  {chap:"有理数的加法", q:"（-7）+ 7 等于多少？", a:"0。互为相反数的两数相加得 0。"},
+  {chap:"有理数的加法", q:"0 +(-4)等于多少？", a:"-4"},
+  {chap:"有理数的加法", q:"(-2.5)+ (-3.5) 等于多少？", a:"-6"},
+  {chap:"有理数的加法", q:"(-1/2)+ 1/2等于多少？", a:"0"},
+  {chap:"有理数的加法", q:"(-6 )+(-3) +(-1) 等于多少？", a:"-10"},
+  {chap:"有理数的加法", q:"有理数加法的交换律和结合律分别是什么？", a:"交换律：a 加 b 等于 b 加 a；结合律：a 加 b 的和加 c 等于 a 加 b 加 c 的和。"},
+  {chap:"有理数的加法", q:"计算 (-23)+ 58 +(-17) 时，怎样算比较简便？", a:"先把 -23 和 -17 相加得 -40，再算 -40 加 58 等于 18。"},
+  {chap:"有理数的加法", q:"绝对值小于 3 的所有整数的和是多少？", a:"这些整数是 -2、-1、0、1、2，和为 0。"},
+  {chap:"有理数的加法", q:"早晨气温 -4 ℃，中午上升了 7 ℃，中午气温是多少？", a:"-4 加 7 等于 3，中午气温是 3 ℃。"},
+
+  /* ---------- 有理数的减法 ---------- */
+  {chap:"有理数的减法", q:"有理数减法法则是什么？", a:"减去一个数，等于加上这个数的相反数，即 a 减 b 等于 a 加 -b。"},
+  {chap:"有理数的减法", q:"5 -（-3） 等于多少？", a:"5 + 3 = 8。"},
+  {chap:"有理数的减法", q:"（-5）- 3 等于多少？", a:"（-5） +（-3）= -8。"},
+  {chap:"有理数的减法", q:"（-5 ）-（-3 ）等于多少？", a:"（-5）+ 3 = -2。"},
+  {chap:"有理数的减法", q:"0 -（ -6 ）等于多少？", a:"0 +6 = 6。"},
+  {chap:"有理数的减法", q:"（-2 ）-（ -2）等于多少？", a:"0"},
+  {chap:"有理数的减法", q:"3 - 7 等于多少？", a:"3 +（ -7 ）= -4。"},
+  {chap:"有理数的减法", q:"减法转化为加法时，什么变了？什么没变？", a:"减号变成加号，减数变成它的相反数，被减数不变。"},
+
+  /* ---------- 加减混合运算 ---------- */
+  {chap:"加减混合运算", q:"有理数加减混合运算的一般步骤是什么？", a:"第一步，先把减法统一成加法；第二步，写成省略加号和括号的形式；第三步，运用加法法则和运算律计算。"},
+  {chap:"加减混合运算", q:"把 （-3） +（ -5）-（ -7） - 2 写成省略加号和括号的形式。", a:"-3 - 5 + 7 - 2"},
+  {chap:"加减混合运算", q:"计算：（-3）- 5 + 7 - 2", a:"等于 -8 加 7 减 2 等于 -1 减 2 等于 -3。"},
+  {chap:"加减混合运算", q:"计算：（-8）-（ -15） +（ -6） - 10", a:"等于 -8 加 15 减 6 减 10 等于 15 减 24 等于 -9。"},
+  {chap:"加减混合运算", q:"计算：12 -（ -18） +（ -7） - 15", a:"等于 12 加 18 减 7 减 15 等于 30 减 22 等于 8。"},
+  {chap:"加减混合运算", q:"计算：（-20）+ 3 - 5 + 7", a:"等于 -22 加 10 等于 -15。"},
+  {chap:"加减混合运算", q:"省略形式 -7 + 3 - 5 可以读作什么？", a:"负 7 加 3 减 5，也可以读作负 7、正 3、负 5 的和。"},
+  {chap:"加减混合运算", q:"计算：（-2.5） + 3.8 - 1.5 + 0.2", a:"等于 -2.5 加 3.8 减 1.5 加 0.2 等于 1.3 减 1.5 加 0.2 等于 0。"},
+  {chap:"加减混合运算", q:"计算：1 - 2 + 3 - 4 + 5 - 6", a:"等于 1 减 2 的差 加 3 减 4 的差 加 5 减 6 的差 等于 -1 减 1 减 1 等于 -3。"},
+  {chap:"加减混合运算", q:"计算：（-1） + 2 - 3 + 4 - 5 + 6", a:"等于 -1 加 2 的和 加 -3 加 4 的和 加 -5 加 6 的和 等于 1 加 1 加 1 等于 3。"}
+];
+
+/* ==================== 状态 ==================== */
+const $ = id => document.getElementById(id);
+const CHAPTERS = [];
+BANK.forEach(x => { if (!CHAPTERS.includes(x.chap)) CHAPTERS.push(x.chap); });
+
+let filter = "全部";
+let mode = "normal";          // normal | wrong
+let pool = [];
+let pos = 0;                  // 当前题在 pool 中的位置 + 1（pos-1 是当前题下标）
+let current = null;
+
+let wrongList = [];
+let knownCount = 0;
+try {
+  wrongList = JSON.parse(localStorage.getItem("mt_wrong_v1") || "[]");
+  knownCount = Number(localStorage.getItem("mt_known_v1") || 0);
+} catch (e) { wrongList = []; knownCount = 0; }
+
+/* ==================== 语音模块 ==================== */
+let voiceOn = true;
+let rate = 1.0;
+let voices = [];
+
+function refreshVoices() {
+  if (!("speechSynthesis" in window)) return;
+  voices = window.speechSynthesis.getVoices() || [];
+}
+if ("speechSynthesis" in window) {
+  refreshVoices();
+  window.speechSynthesis.onvoiceschanged = refreshVoices;
+}
+
+function pickVoice() {
+  return voices.find(v => /zh[-_]CN/i.test(v.lang))
+      || voices.find(v => /^zh/i.test(v.lang))
+      || null;
+}
+
+function toSpeech(text) {
+  let t = String(text);
+  t = t.replace(/[()（）\[\]【】]/g, "");
+  t = t.replace(/±/g, "正负");
+  t = t.replace(/℃/g, "摄氏度");
+  t = t.replace(/×/g, "乘");
+  t = t.replace(/÷/g, "除以");
+  t = t.replace(/≥/g, "大于等于");
+  t = t.replace(/≤/g, "小于等于");
+  t = t.replace(/≠/g, "不等于");
+  t = t.replace(/≈/g, "约等于");
+  t = t.replace(/=/g, "等于");
+  t = t.replace(/→/g, "得到");
+  t = t.replace(/²/g, "的平方");
+  t = t.replace(/³/g, "的立方");
+  t = t.replace(/\|([^|]+)\|/g, "$1的绝对值");
+  t = t.replace(/-(\d+)\s*\/\s*(\d+)/g, "负$2分之$1");
+  t = t.replace(/(\d+)\s*\/\s*(\d+)/g, "$2分之$1");
+
+  t = t.replace(/-/g, function(m, offset, str){
+    const before = str.slice(0, offset).replace(/\s+$/, "");
+    if (before.length === 0) return "负";
+    const last = before[before.length - 1];
+    if (/[0-9A-Za-z)\]}\）】]/.test(last)) return "减";
+    return "负";
+  });
+
+  t = t.replace(/\+/g, function(m, offset, str){
+    const before = str.slice(0, offset).replace(/\s+$/, "");
+    if (before.length === 0) return "正";
+    const last = before[before.length - 1];
+    if (/[0-9A-Za-z)\]}\）】]/.test(last)) return "加";
+    return "正";
+  });
+
+  t = t.replace(/\s+/g, " ").trim();
+  return t;
+}
+
+function speakText(text) {
+  if (!voiceOn) return;
+  if (!("speechSynthesis" in window)) return;
+  const t = toSpeech(text);
+  if (!t) return;
+
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(t);
+  u.lang = "zh-CN";
+  const v = pickVoice();
+  if (v) u.voice = v;
+  u.rate = rate;
+  u.pitch = 1;
+  u.volume = 1;
+  setTimeout(() => window.speechSynthesis.speak(u), 60);
+}
+
+function stopSpeak() {
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+}
+
+/* ==================== 存取 ==================== */
+function save() {
+  try {
+    localStorage.setItem("mt_wrong_v1", JSON.stringify(wrongList));
+    localStorage.setItem("mt_known_v1", String(knownCount));
+  } catch (e) {}
+}
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"]/g, m =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
+}
+
+/* ==================== 抽题池 ==================== */
+function buildPool() {
+  let items;
+  if (mode === "wrong") {
+    items = wrongList.slice();
+  } else if (filter === "全部") {
+    items = BANK.slice();
+  } else {
+    items = BANK.filter(x => x.chap === filter);
+  }
+  pool = shuffle(items);
+  pos = 0;
+}
+
+/* ★ 改动 3：抽出一个 renderCurrent()，next / prev 共用 */
+function renderCurrent() {
+  if (!current) return;
+  $("tag").textContent = current.chap;
+  $("progress").textContent = pos + " / " + pool.length;
+  $("q").textContent = current.q;
+  $("a").textContent = current.a;
+  $("a").hidden = true;
+  updatePrevBtn();  // 根据位置刷新「上一题」是否可点
+  speakText(current.q);
+}
+
+function updatePrevBtn() {
+  // pos <= 1 表示已经在第一题，禁用「上一题」
+  $("btnPrev").disabled = (pos <= 1);
+}
+
+function next() {
+  if (!pool.length || pos >= pool.length) buildPool();
+
+  if (!pool.length) {
+    current = null;
+    $("tag").textContent = "—";
+    $("progress").textContent = "";
+    $("q").textContent = mode === "wrong"
+      ? "不熟清单是空的，先去抽几题吧～"
+      : "该分类下暂无题目";
+    $("a").hidden = true;
+    $("a").textContent = "";
+    updatePrevBtn();
+    stopSpeak();
+    return;
+  }
+
+  current = pool[pos++];
+  renderCurrent();
+}
+
+/* ★ 改动 3（继续）：新增 prev() 函数 */
+function prev() {
+  if (!pool.length || !current) return;
+  if (pos <= 1) return;            // 已经是本轮第一题
+
+  pos -= 1;                        // 位置回退一格
+  current = pool[pos - 1];         // 重新取出上一题
+  renderCurrent();
+}
+
+/* ==================== 显示 / 标记 ==================== */
+function toggleAnswer() {
+  if (!current) return;
+  const willShow = $("a").hidden;
+  $("a").hidden = !willShow;
+  if (willShow) {
+    speakText(current.a);
+  } else {
+    stopSpeak();
+  }
+}
+
+function markKnown() {
+  if (!current) return;
+  knownCount++;
+  const before = wrongList.length;
+  wrongList = wrongList.filter(x => x.q !== current.q);
+  save();
+  renderWrong();
+  updateStats();
+  if (mode === "wrong" && wrongList.length !== before) buildPool();
+  next();
+}
+
+function markUnknown() {
+  if (!current) return;
+  if (!wrongList.some(x => x.q === current.q)) {
+    wrongList.push({ chap: current.chap, q: current.q, a: current.a });
+  }
+  save();
+  renderWrong();
+  updateStats();
+  if (mode === "wrong") buildPool();
+  next();
+}
+
+/* ==================== 渲染 ==================== */
+function renderChips() {
+  const box = $("chips");
+  box.innerHTML = "";
+  ["全部"].concat(CHAPTERS).forEach(ch => {
+    const b = document.createElement("button");
+    b.className = "chip" + (ch === filter && mode === "normal" ? " active" : "");
+    b.textContent = ch;
+    b.onclick = () => {
+      filter = ch;
+      mode = "normal";
+      $("btnWrongMode").classList.remove("active");
+      buildPool();
+      renderChips();
+      next();
+      updateStats();
+    };
+    box.appendChild(b);
+  });
+}
+
+function renderWrong() {
+  const ul = $("wrongList");
+  ul.innerHTML = "";
+  $("wrongCount").textContent = wrongList.length ? "(" + wrongList.length + ")" : "";
+
+  if (!wrongList.length) {
+    const li = document.createElement("li");
+    li.className = "empty";
+    li.textContent = "暂无，继续保持！";
+    ul.appendChild(li);
+    return;
+  }
+
+  wrongList.forEach((item, i) => {
+    const li = document.createElement("li");
+    const div = document.createElement("div");
+    div.className = "wi";
+    div.innerHTML =
+      '<div class="wq">' + esc(item.q) + '</div>' +
+      '<div class="wa">' + esc(item.a) + '</div>';
+
+    const playBtn = document.createElement("button");
+    playBtn.className = "mini";
+    playBtn.style.background = "#dbeafe";
+    playBtn.style.color = "#1d4ed8";
+    playBtn.textContent = "🔊";
+    playBtn.onclick = () => {
+      const wasOn = voiceOn;
+      voiceOn = true;
+      speakText(item.q + "。" + item.a);
+      voiceOn = wasOn;
+    };
+
+    const delBtn = document.createElement("button");
+    delBtn.className = "mini";
+    delBtn.textContent = "移除";
+    delBtn.onclick = () => {
+      wrongList.splice(i, 1);
+      save();
+      renderWrong();
+      updateStats();
+      if (mode === "wrong") { buildPool(); next(); }
+    };
+
+    li.appendChild(div);
+    li.appendChild(playBtn);
+    li.appendChild(delBtn);
+    ul.appendChild(li);
+  });
+}
+
+function updateStats() {
+  $("stats").textContent =
+    "已掌握 " + knownCount + " 题 · 不熟 " + wrongList.length +
+    " 题 · 题库共 " + BANK.length + " 题";
+}
+
+/* ==================== 事件 ==================== */
+$("btnShow").onclick = toggleAnswer;
+$("btnNext").onclick = next;
+$("btnPrev").onclick = prev;      // ★ 改动 3：绑定「上一题」
+$("btnKnown").onclick = markKnown;
+$("btnUnknown").onclick = markUnknown;
+$("card").onclick = toggleAnswer;
+
+$("btnWrongMode").onclick = () => {
+  mode = mode === "wrong" ? "normal" : "wrong";
+  $("btnWrongMode").classList.toggle("active", mode === "wrong");
+  buildPool();
+  renderChips();
+  next();
+  updateStats();
+};
+
+$("btnVoice").onclick = () => {
+  voiceOn = !voiceOn;
+  $("btnVoice").classList.toggle("active", voiceOn);
+  $("btnVoice").textContent = voiceOn ? "🔊 语音开" : "🔇 语音关";
+  if (!voiceOn) stopSpeak();
+};
+
+$("rateSel").onchange = e => { rate = Number(e.target.value); };
+
+$("btnRepeat").onclick = () => {
+  if (!current) return;
+  const wasOn = voiceOn;
+  voiceOn = true;
+  const text = $("a").hidden ? current.q : current.q + "。" + current.a;
+  speakText(text);
+  voiceOn = wasOn;
+};
+
+document.addEventListener("keydown", e => {
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT") return;
+  if (e.code === "Space") { e.preventDefault(); toggleAnswer(); }
+  else if (e.key === "1") markKnown();
+  else if (e.key === "2") markUnknown();
+  else if (e.key === "ArrowRight") next();
+  else if (e.key === "ArrowLeft") prev();   // ★ 左方向键 = 上一题
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) stopSpeak();
+});
+
+/* ==================== 启动 ==================== */
+renderChips();
+renderWrong();
+updateStats();
+buildPool();
+next();
+</script>
+</body>
+</html>
