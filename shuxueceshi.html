@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>有理数口算测试</title>
+<style>
+  :root{
+    --bg:#eef2f9; --card:#fff; --primary:#2563eb;
+    --green:#16a34a; --red:#dc2626; --amber:#f59e0b;
+    --purple:#7c3aed;
+    --text:#1e293b; --muted:#64748b; --line:#e2e8f0;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0; padding:14px;
+    font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.6;
+    min-height:100vh;
+  }
+  .wrap{max-width:620px;margin:0 auto;}
+  header{margin-bottom:14px;padding:0 4px;}
+  header h1{font-size:20px;margin:0 0 2px;}
+  header .sub{font-size:13px;color:var(--muted);margin:0;}
+  .card{
+    background:var(--card); border-radius:18px; padding:20px 18px;
+    box-shadow:0 8px 26px rgba(30,41,59,.08);
+  }
+  .label{
+    display:block; font-size:13px; font-weight:700;
+    color:var(--muted); margin-bottom:6px; margin-top:14px;
+  }
+  .label:first-child{margin-top:0;}
+  #nameInput, #loginName{
+    width:100%; padding:14px 16px;
+    border:2px solid var(--line); border-radius:12px;
+    font-size:17px; font-family:inherit;
+    text-align:center; font-weight:700;
+    color:var(--text); background:#fafafa;
+  }
+  #nameInput:focus, #loginName:focus{
+    outline:none;border-color:var(--primary);background:#fff;
+  }
+
+  .primaryBtn{
+    width:100%; margin-top:16px; padding:16px;
+    border:0; border-radius:14px;
+    background:linear-gradient(135deg,#3b82f6,#2563eb);
+    color:#fff; font-size:17px; font-weight:800;
+    letter-spacing:.06em; cursor:pointer;
+    box-shadow:0 8px 22px rgba(37,99,235,.32);
+    transition:.15s;
+  }
+  .primaryBtn:active{transform:scale(.98);}
+  .primaryBtn:disabled{opacity:.6;cursor:not-allowed;}
+  .ghostBtn{
+    width:100%; margin-top:10px; padding:13px;
+    border:1px solid var(--line); border-radius:14px;
+    background:#fff; color:var(--muted);
+    font-size:14px; font-weight:600; cursor:pointer;
+  }
+  .ghostBtn:active{transform:scale(.98);}
+
+  .studentBar{
+    background:linear-gradient(135deg,#1e3a8a,#0f172a);
+    color:#fff; border-radius:16px;
+    padding:14px 18px; margin-bottom:12px;
+    display:flex; align-items:center; justify-content:space-between;
+    box-shadow:0 8px 22px rgba(15,23,42,.28); gap:12px;
+  }
+  .studentLabel{font-size:11px;color:#94a3b8;letter-spacing:.06em;margin-bottom:2px;}
+  .studentName{
+    font-size:26px; font-weight:800;
+    letter-spacing:.04em; line-height:1.2; word-break:break-all;
+  }
+  .progressBox{flex:0 0 120px;text-align:right;}
+  .progressText{
+    font-size:13px; color:#cbd5e1; font-weight:700;
+    font-variant-numeric:tabular-nums; margin-bottom:6px;
+  }
+  .progressBar{
+    height:8px; background:rgba(255,255,255,.18);
+    border-radius:999px; overflow:hidden;
+  }
+  .progressFill{
+    height:100%; width:0%;
+    background:linear-gradient(90deg,#22c55e,#4ade80);
+    border-radius:999px; transition:width .25s ease;
+  }
+  .qTypeBadge{
+    display:inline-block; font-size:11px;
+    padding:2px 9px; border-radius:999px; margin-top:4px;
+    font-weight:700; letter-spacing:.03em;
+    background:rgba(255,255,255,.12); color:#cbd5e1;
+  }
+  .modeBadge{
+    display:inline-block; font-size:10px;
+    padding:2px 8px; border-radius:999px;
+    font-weight:700; letter-spacing:.05em;
+    background:rgba(255,255,255,.15);
+    color:#cbd5e1; margin-left:6px;
+  }
+
+  .q{
+    font-size:clamp(22px,6vw,34px);
+    font-weight:800; letter-spacing:.03em;
+    text-align:center; line-height:1.6;
+    padding:10px 0 16px; word-break:break-word;
+    font-variant-numeric:tabular-nums;
+    min-height:80px; display:flex;
+    align-items:center; justify-content:center;
+  }
+  #ansDisplay{
+    width:100%; padding:14px 16px;
+    font-size:26px; font-weight:800;
+    text-align:center; border:2px solid var(--line);
+    border-radius:14px; background:#fafafa; color:var(--text);
+    font-variant-numeric:tabular-nums; min-height:62px;
+    display:flex; align-items:center; justify-content:center;
+    transition:.15s; letter-spacing:.04em;
+  }
+  #ansDisplay.ok{border-color:var(--green);background:#f0fdf4;color:var(--green);}
+  #ansDisplay.bad{border-color:var(--red);background:#fef2f2;color:var(--red);}
+  #ansDisplay .placeholder{color:#cbd5e1;font-weight:500;font-size:15px;}
+
+  .feedback{
+    margin-top:12px; min-height:26px;
+    text-align:center; font-size:15px; font-weight:600;
+  }
+  .feedback.ok{color:var(--green);}
+  .feedback.bad{color:var(--red);}
+  .feedback.warn{color:var(--amber);}
+
+  .keypad{
+    display:grid; grid-template-columns:repeat(4, 1fr);
+    gap:8px; margin-top:14px;
+  }
+  .key{
+    border:1px solid var(--line); background:#fff; color:var(--text);
+    border-radius:14px; padding:0; height:56px;
+    font-size:22px; font-weight:700; cursor:pointer;
+    transition:transform .08s, background .12s;
+    font-variant-numeric:tabular-nums;
+    display:flex; align-items:center; justify-content:center;
+    user-select:none;
+  }
+  .key:active{transform:scale(.94);background:#f1f5f9;}
+  .key.fn{background:#f8fafc;color:var(--muted);font-size:20px;}
+  .key.neg{background:#fff7ed;color:#c2410c;font-size:20px;}
+  .key.back{background:#fef2f2;color:#b91c1c;font-size:22px;}
+  .key.frac{background:#f0fdfa;color:#0d9488;font-size:22px;}
+  .key.submit{
+    background:linear-gradient(135deg,#3b82f6,#2563eb);
+    color:#fff; font-size:16px; letter-spacing:.05em;
+    font-weight:800; box-shadow:0 6px 16px rgba(37,99,235,.32);
+    border:0;
+  }
+  .key.submit:active{background:#1d4ed8;}
+  .key.submit:disabled{opacity:.5;cursor:not-allowed;box-shadow:none;}
+
+  .endBtn{
+    width:100%; margin-top:12px; padding:12px;
+    border:1px solid var(--line); border-radius:12px;
+    background:#fff; color:var(--muted);
+    font-size:14px; font-weight:600; cursor:pointer;
+  }
+  .endBtn:active{transform:scale(.98);}
+
+  .uploadBar{
+    margin-top:12px; padding:10px 14px;
+    border-radius:10px; font-size:13px;
+    text-align:center; font-weight:600;
+    display:none;
+  }
+  .uploadBar.show{display:block;}
+  .uploadBar.loading{background:#eff6ff;color:#2563eb;}
+  .uploadBar.ok{background:#f0fdf4;color:#16a34a;}
+  .uploadBar.info{background:#f1f5f9;color:#475569;}
+  .uploadBar.fail{background:#fef2f2;color:#dc2626;}
+
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(15,23,42,.72);
+    display:none; align-items:center; justify-content:center;
+    z-index:100; padding:20px; backdrop-filter:blur(4px);
+    overflow-y:auto;
+  }
+  .overlay.show{display:flex;}
+  .overlayCard{
+    background:#fff; border-radius:22px;
+    padding:26px 22px; text-align:center;
+    width:100%; max-width:400px;
+    box-shadow:0 20px 60px rgba(0,0,0,.4);
+    animation:pop .35s cubic-bezier(.2,1.4,.4,1);
+    margin:auto;
+  }
+  @keyframes pop{
+    0%{transform:scale(.85);opacity:0;}
+    100%{transform:scale(1);opacity:1;}
+  }
+  .overlayTitle{
+    font-size:14px; font-weight:700;
+    color:var(--green); letter-spacing:.1em; margin-bottom:10px;
+  }
+  .overlayName{
+    font-size:30px; font-weight:800;
+    color:var(--text); margin-bottom:14px; word-break:break-all;
+  }
+  .overlayStats{
+    font-size:15px; color:var(--muted); margin-bottom:12px;
+  }
+  .overlayRate{
+    font-size:56px; font-weight:900;
+    color:var(--primary); font-variant-numeric:tabular-nums;
+    line-height:1.1; margin-bottom:8px;
+  }
+  .overlayRate.ok{color:var(--green);}
+  .overlayRate.warn{color:var(--amber);}
+  .overlayRate.bad{color:var(--red);}
+  .overlayTip{font-size:12px;color:#94a3b8;margin-bottom:14px;}
+  .overlayBreakdown{
+    font-size:12.5px; background:#f8fafc;
+    padding:12px 16px; border-radius:12px;
+    margin-bottom:16px; text-align:left;
+    line-height:1.9; font-variant-numeric:tabular-nums;
+  }
+  .overlayBreakdown .row{
+    display:flex; justify-content:space-between; color:var(--muted);
+  }
+  .overlayBreakdown .row b{color:var(--text);font-weight:700;}
+
+  /* ============ 老师端 / 单机完成页 ============ */
+  .resultTitle{font-size:18px;font-weight:800;margin:0 0 14px;}
+  .resultTable{
+    width:100%; border-collapse:collapse;
+    font-size:14px; font-variant-numeric:tabular-nums;
+  }
+  .resultTable th{
+    background:#f1f5f9; color:var(--muted);
+    font-size:12px; font-weight:700;
+    padding:10px 6px; text-align:left;
+    border-bottom:1px solid var(--line); letter-spacing:.03em;
+  }
+  .resultTable th:first-child{border-radius:10px 0 0 0;}
+  .resultTable th:last-child{border-radius:0 10px 0 0;text-align:right;}
+  .resultTable td{
+    padding:12px 6px; border-bottom:1px solid var(--line);
+    vertical-align:middle;
+  }
+  .resultTable td:last-child{text-align:right;font-weight:800;}
+  .resultTable tr:last-child td{border-bottom:0;}
+  .rate{
+    display:inline-block; padding:3px 10px;
+    border-radius:999px; font-size:13px; font-weight:700;
+  }
+  .rate.excellent{background:#dcfce7;color:#166534;}
+  .rate.good{background:#dbeafe;color:#1d4ed8;}
+  .rate.pass{background:#fef3c7;color:#92400e;}
+  .rate.poor{background:#fee2e2;color:#991b1b;}
+  .summary{
+    margin-top:14px; padding:14px 16px;
+    background:#f8fafc; border-radius:12px;
+    font-size:13px; color:var(--muted); line-height:1.8;
+  }
+  .summary b{color:var(--text);font-size:15px;}
+  .delBtn{
+    border:0; background:#fee2e2; color:#b91c1c;
+    padding:4px 10px; border-radius:6px;
+    font-size:12px; cursor:pointer; font-weight:600;
+  }
+  .teacherTools{
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:8px; margin-top:10px;
+  }
+  .teacherTools button{
+    padding:12px; border-radius:12px;
+    border:1px solid var(--line); background:#fff;
+    font-size:14px; font-weight:700;
+    color:var(--muted); cursor:pointer;
+  }
+  .teacherTools button.primary{
+    background:var(--primary); color:#fff; border-color:var(--primary);
+  }
+  .teacherTools button.danger{
+    background:#fef2f2; color:#b91c1c; border-color:#fecaca;
+  }
+
+  /* 单机模式历史记录 */
+  .historyBox{
+    margin-top:18px; padding-top:18px;
+    border-top:1px solid var(--line);
+  }
+  .historyBox h3{
+    font-size:15px; font-weight:800;
+    margin:0 0 12px; color:var(--text);
+  }
+  .historyList{
+    max-height:280px; overflow-y:auto;
+    border:1px solid var(--line); border-radius:12px;
+  }
+  .historyItem{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 14px; font-size:13px;
+    border-bottom:1px solid var(--line);
+    gap:10px;
+  }
+  .historyItem:last-child{border-bottom:0;}
+  .historyItem .hiName{
+    font-weight:700; color:var(--text);
+    flex:1; min-width:0; overflow:hidden;
+    text-overflow:ellipsis; white-space:nowrap;
+  }
+  .historyItem .hiDate{
+    font-size:11px; color:#94a3b8;
+    font-variant-numeric:tabular-nums;
+  }
+  .historyItem .hiRate{
+    font-weight:800; font-variant-numeric:tabular-nums;
+  }
+  .historyItem .hiDel{
+    border:0; background:#fee2e2; color:#b91c1c;
+    width:22px; height:22px; border-radius:6px;
+    font-size:14px; cursor:pointer; line-height:1;
+  }
+  .emptyHist{
+    padding:20px; text-align:center;
+    font-size:13px; color:#94a3b8;
+  }
+
+  @media (max-width:420px){
+    .key{height:52px;font-size:20px;}
+    .q{font-size:20px;}
+    .studentName{font-size:22px;}
+    .overlayRate{font-size:48px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1 id="pageTitle">有理数口算测试</h1>
+    <p class="sub" id="pageSub">请填写姓名后开始答题</p>
+  </header>
+
+  <!-- ============ 学生登录 ============ -->
+  <div id="screenLogin" class="screen" hidden>
+    <div class="card">
+      <label class="label">请输入你的姓名</label>
+      <input type="text" id="loginName" placeholder="例如：张三" autocomplete="off">
+      <button class="primaryBtn" id="btnLogin">开 始 答 题</button>
+      <div class="uploadBar info show" id="loginTip">正在检测运行环境…</div>
+    </div>
+  </div>
+
+  <!-- ============ 学生答题 ============ -->
+  <div id="screenTest" class="screen" hidden>
+    <div class="studentBar">
+      <div class="studentInfo">
+        <div class="studentLabel">当前同学</div>
+        <div class="studentName" id="studentName">—</div>
+        <div class="qTypeBadge" id="qTypeBadge">—</div>
+        <span class="modeBadge" id="modeBadge" hidden></span>
+      </div>
+      <div class="progressBox">
+        <div class="progressText" id="progressText">0 / 20</div>
+        <div class="progressBar"><div class="progressFill" id="progressFill"></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="q" id="q">—</div>
+      <div id="ansDisplay"><span class="placeholder">点下方键盘输入答案</span></div>
+      <div class="feedback" id="feedback"></div>
+
+      <div class="keypad" id="keypad">
+        <button class="key" data-key="7">7</button>
+        <button class="key" data-key="8">8</button>
+        <button class="key" data-key="9">9</button>
+        <button class="key back" data-action="back">⌫</button>
+
+        <button class="key" data-key="4">4</button>
+        <button class="key" data-key="5">5</button>
+        <button class="key" data-key="6">6</button>
+        <button class="key neg" data-action="neg">±</button>
+
+        <button class="key" data-key="1">1</button>
+        <button class="key" data-key="2">2</button>
+        <button class="key" data-key="3">3</button>
+        <button class="key fn" data-action="clear">C</button>
+
+        <button class="key" data-key="0">0</button>
+        <button class="key" data-key=".">.</button>
+        <button class="key frac" data-key="/">/</button>
+        <button class="key submit" data-action="submit" id="btnSubmit">提交</button>
+      </div>
+
+      <div class="uploadBar" id="uploadBar"></div>
+    </div>
+  </div>
+
+  <!-- ============ 学生完成页 ============ -->
+  <div id="screenDone" class="screen" hidden>
+    <div class="card">
+      <div style="text-align:center;margin-bottom:18px;">
+        <div style="font-size:44px;line-height:1;margin-bottom:10px;">✓</div>
+        <h2 style="margin:0 0 6px;font-size:22px;">答题完成</h2>
+        <p style="color:#64748b;font-size:14px;margin:0;" id="doneText">
+          成绩已提交，请等待老师指示
+        </p>
+      </div>
+
+      <!-- 单机模式才显示的：本次成绩摘要 -->
+      <div id="doneSelfBox" hidden>
+        <div class="summary" id="doneSelfSummary"></div>
+      </div>
+
+      <!-- 单机模式才显示的：历史记录 -->
+      <div class="historyBox" id="historyBox" hidden>
+        <h3>我的练习记录</h3>
+        <div class="historyList" id="historyList"></div>
+        <button class="ghostBtn" id="btnExportMine" style="margin-top:12px;">导出我的成绩 CSV</button>
+        <button class="ghostBtn" id="btnClearMine" style="background:#fef2f2;color:#b91c1c;border-color:#fecaca;">清空我的记录</button>
+      </div>
+
+      <button class="primaryBtn" id="btnBackToLogin">再答一次</button>
+    </div>
+  </div>
+
+  <!-- ============ 老师端 ============ -->
+  <div id="screenTeacher" class="screen" hidden>
+    <div class="card">
+      <h2 class="resultTitle">全班成绩 <span id="teacherCount" style="color:#2563eb;font-size:15px;"></span></h2>
+      <table class="resultTable" id="resultTable"></table>
+      <div class="summary" id="summary">正在加载…</div>
+
+      <button class="primaryBtn" id="btnRefresh">刷 新 成 绩</button>
+      <button class="ghostBtn" id="btnExport">导 出 CSV</button>
+
+      <div class="teacherTools">
+        <button class="primary" id="btnShowUrl">显示学生访问地址</button>
+        <button class="danger" id="btnClearAll">清空所有成绩</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 完成遮罩 ============ -->
+  <div class="overlay" id="overlay">
+    <div class="overlayCard">
+      <div class="overlayTitle" id="overlayTitle">✓ 完成答题</div>
+      <div class="overlayName" id="overlayName">—</div>
+      <div class="overlayStats" id="overlayStats"></div>
+      <div class="overlayRate" id="overlayRate">—</div>
+      <div class="overlayTip" id="overlayTip"></div>
+      <div class="overlayBreakdown" id="overlayBreakdown"></div>
+      <button class="primaryBtn" id="btnOverlayDone">完 成</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   基础工具
+   ============================================================ */
+const $ = id => document.getElementById(id);
+
+function randInt(min, max){
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function nonZero(min, max){
+  let v = 0;
+  while(v === 0) v = randInt(min, max);
+  return v;
+}
+function gcd(a, b){
+  a = Math.abs(a); b = Math.abs(b);
+  while(b){ const t = b; b = a % b; a = t; }
+  return a || 1;
+}
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function escHtml(s){
+  return String(s).replace(/[&<>"]/g, m =>
+    ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[m]));
+}
+
+/* 题型常量 */
+const TYPE_NAMES = {
+  add: "有理数的加法",
+  sub: "有理数的减法",
+  mixEasy: "加减混合 · 简单",
+  mixHard: "加减混合 · 难度"
+};
+const TYPE_SHORT = {
+  add: "加法", sub: "减法", mixEasy: "混合·简单", mixHard: "混合·难度"
+};
+const TYPE_COLORS = {
+  add: "#3b82f6", sub: "#10b981", mixEasy: "#f59e0b", mixHard: "#7c3aed"
+};
+
+/* 每位学生的题型数量（改这里即可调整题量） */
+const DEFAULT_CFG = { add: 5, sub: 5, mixEasy: 5, mixHard: 5 };
+let cfg = { ...DEFAULT_CFG };
+
+/* 运行模式：'server' 或 'standalone' */
+let MODE = 'unknown';
+
+/* ============================================================
+   出题 —— 数字生成
+   ============================================================ */
+function makeInt2(){ return { kind:'int', val: nonZero(-10, 10) }; }
+function makeDec2(){
+  let v;
+  do {
+    const sign = Math.random() < 0.5 ? -1 : 1;
+    const i = randInt(0, 9);
+    const d = randInt(1, 9);
+    v = sign * (i + d / 10);
+  } while(Math.abs(v) < 0.05);
+  v = Math.round(v * 10) / 10;
+  return { kind:'dec', val: v, show: v.toFixed(1) };
+}
+function makeFrac2(){
+  const dens = [2, 3, 4, 5, 6];
+  const d = dens[randInt(0, dens.length - 1)];
+  let n = nonZero(-9, 9);
+  const g = gcd(n, d);
+  n = n / g;
+  const dd = d / g;
+  if(dd === 1) return { kind:'int', val: n };
+  return { kind:'frac', n: n, d: dd, val: n / dd };
+}
+
+/* 分数运算 */
+function toFrac(num){
+  if(num.kind === 'int') return { n: num.val, d: 1 };
+  if(num.kind === 'dec') return { n: Math.round(num.val * 10), d: 10 };
+  return { n: num.n, d: num.d };
+}
+function simp(f){
+  let { n, d } = f;
+  if(d < 0){ n = -n; d = -d; }
+  const g = gcd(n, d);
+  return { n: n / g, d: d / g };
+}
+function fracAdd(a, b){ return simp({ n: a.n * b.d + b.n * a.d, d: a.d * b.d }); }
+function fracSub(a, b){ return simp({ n: a.n * b.d - b.n * a.d, d: a.d * b.d }); }
+
+/* 显示 */
+function numText(num){
+  if(num.kind === 'int') return String(num.val);
+  if(num.kind === 'dec') return num.show;
+  return num.n + "/" + num.d;
+}
+function showAns(resFrac, hasFrac, hasDec){
+  resFrac = simp(resFrac);
+  if(hasFrac){
+    if(resFrac.d === 1) return String(resFrac.n);
+    return resFrac.n + "/" + resFrac.d;
+  }
+  if(hasDec){
+    if(resFrac.d === 1) return String(resFrac.n);
+    const v = resFrac.n / resFrac.d;
+    let str = v.toFixed(2);
+    str = str.replace(/\.?0+$/, '');
+    return str;
+  }
+  return String(resFrac.n / resFrac.d);
+}
+
+/* ============================================================
+   四类出题
+   ============================================================ */
+function genAdd(){
+  const t = Math.random();
+  let a, b;
+  if(t < 0.35){ a = randInt(1, 20); b = randInt(1, 20); }
+  else if(t < 0.65){ a = -randInt(1, 20); b = -randInt(1, 20); }
+  else if(t < 0.85){ a = randInt(1, 20); b = -randInt(1, 20); }
+  else { a = -randInt(1, 20); b = randInt(1, 20); }
+  return {
+    q: (a < 0 ? "(" + a + ")" : a) + " + " + (b < 0 ? "(" + b + ")" : b),
+    ansVal: a + b, ansShow: String(a + b),
+    hasFrac: false, hasDec: false
+  };
+}
+function genSub(){
+  const t = Math.random();
+  let a, b;
+  if(t < 0.3){ a = randInt(1, 20); b = randInt(1, 20); }
+  else if(t < 0.55){ a = -randInt(1, 20); b = randInt(1, 20); }
+  else if(t < 0.8){ a = randInt(1, 20); b = -randInt(1, 20); }
+  else { a = -randInt(1, 20); b = -randInt(1, 20); }
+  return {
+    q: (a < 0 ? "(" + a + ")" : a) + " - " + (b < 0 ? "(" + b + ")" : b),
+    ansVal: a - b, ansShow: String(a - b),
+    hasFrac: false, hasDec: false
+  };
+}
+function genMixEasy(){
+  let a = nonZero(-20, 20), b = nonZero(-20, 20), c = nonZero(-20, 20);
+  if(a > 0 && b > 0 && c > 0){
+    const pick = randInt(0, 2);
+    if(pick === 0) a = -a;
+    else if(pick === 1) b = -b;
+    else c = -c;
+  }
+  const mode = randInt(0, 2);
+  const A = a < 0 ? "(" + a + ")" : a;
+  const B = b < 0 ? "(" + b + ")" : b;
+  const C = c < 0 ? "(" + c + ")" : c;
+  let q, ans;
+  if(mode === 0){ q = A + " + " + B + " - " + C; ans = a + b - c; }
+  else if(mode === 1){ q = A + " - " + B + " + " + C; ans = a - b + c; }
+  else { q = A + " - " + B + " - " + C; ans = a - b - c; }
+  return { q, ansVal: ans, ansShow: String(ans), hasFrac: false, hasDec: false };
+}
+function genMixHard(){
+  const flavor = Math.random();
+  let numGen, hasDec = false, hasFrac = false;
+  if(flavor < 0.35){ numGen = makeInt2; }
+  else if(flavor < 0.7){ numGen = makeDec2; hasDec = true; }
+  else { numGen = makeFrac2; hasFrac = true; }
+
+  const nums = [numGen(), numGen(), numGen()];
+  const absCount = randInt(1, 2);
+  const absIdx = shuffle([0, 1, 2]).slice(0, absCount);
+  const modes = [["+", "-"], ["-", "+"], ["-", "-"]];
+  const signs = modes[randInt(0, 2)];
+
+  let cur = null, q = "";
+  for(let i = 0; i < 3; i++){
+    const num = nums[i];
+    const isAbs = absIdx.includes(i);
+    const text = numText(num);
+    let disp;
+    if(isAbs) disp = "|" + text + "|";
+    else disp = (i === 0) ? text : (num.val < 0 ? "(" + text + ")" : text);
+
+    let f = toFrac(num);
+    if(isAbs) f = { n: Math.abs(f.n), d: f.d };
+
+    if(i === 0){ cur = f; q = disp; }
+    else {
+      const sign = signs[i - 1];
+      q += " " + sign + " " + disp;
+      cur = (sign === "+") ? fracAdd(cur, f) : fracSub(cur, f);
+    }
+  }
+  const ansFrac = simp(cur);
+  return {
+    q, ansVal: ansFrac.n / ansFrac.d,
+    ansShow: showAns(ansFrac, hasFrac, hasDec),
+    hasFrac, hasDec
+  };
+}
+const GENERATORS = { add: genAdd, sub: genSub, mixEasy: genMixEasy, mixHard: genMixHard };
+
+/* ============================================================
+   语音
+   ============================================================ */
+let voiceOn = true;
+let voices = [];
+function refreshVoices(){
+  if(!("speechSynthesis" in window)) return;
+  voices = window.speechSynthesis.getVoices() || [];
+}
+if("speechSynthesis" in window){
+  refreshVoices();
+  window.speechSynthesis.onvoiceschanged = refreshVoices;
+}
+function pickVoice(){
+  return voices.find(v => /zh[-_]CN/i.test(v.lang))
+      || voices.find(v => /^zh/i.test(v.lang)) || null;
+}
+function toSpeech(text){
+  let t = String(text);
+  t = t.replace(/\|([^|]+)\|/g, "$1的绝对值");
+  t = t.replace(/[()（）\[\]【】]/g, "");
+  t = t.replace(/=/g, "等于");
+  t = t.replace(/-(\d+)\s*\/\s*(\d+)/g, "负$2分之$1");
+  t = t.replace(/(\d+)\s*\/\s*(\d+)/g, "$2分之$1");
+  t = t.replace(/[-+]/g, function(m, offset, str){
+    const before = str.slice(0, offset).replace(/\s+$/, "");
+    if(before.length === 0) return m === "-" ? "负" : "正";
+    const last = before[before.length - 1];
+    const isNumberEnd = /[0-9A-Za-z)\]}）】\u4e00-\u9fa5]/.test(last);
+    if(!isNumberEnd) return m === "-" ? "负" : "正";
+    return m === "-" ? "减" : "加";
+  });
+  return t.replace(/\s+/g, " ").trim();
+}
+function speak(text){
+  if(!voiceOn) return;
+  if(!("speechSynthesis" in window)) return;
+  const t = toSpeech(text);
+  if(!t) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(t);
+  u.lang = "zh-CN";
+  const v = pickVoice();
+  if(v) u.voice = v;
+  u.rate = 1; u.pitch = 1; u.volume = 1;
+  setTimeout(() => window.speechSynthesis.speak(u), 60);
+}
+function stopSpeak(){
+  if("speechSynthesis" in window) window.speechSynthesis.cancel();
+}
+
+/* ============================================================
+   模式检测
+   ============================================================ */
+async function detectMode(){
+  /* 本地文件或明显是静态托管 → 直接单机 */
+  if(location.protocol === 'file:') return 'standalone';
+  if(/\.github\.io$/i.test(location.hostname)) return 'standalone';
+  if(/\.gitee\.io$/i.test(location.hostname)) return 'standalone';
+  if(/\.netlify\.app$/i.test(location.hostname)) return 'standalone';
+  if(/\.vercel\.app$/i.test(location.hostname)) return 'standalone';
+
+  /* 否则探测服务器 */
+  try{
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 2000);
+    const res = await fetch('/api/scores?_=detect', { signal: controller.signal });
+    clearTimeout(timer);
+    if(res.ok) return 'server';
+  }catch(e){}
+  return 'standalone';
+}
+
+/* ============================================================
+   服务器通信（单机模式自动跳过）
+   ============================================================ */
+async function uploadScore(student){
+  if(MODE === 'standalone'){
+    /* 单机模式：保存到本地 */
+    saveLocalScore(student);
+    return { ok: true, mode: 'standalone' };
+  }
+
+  const total = student.correct + student.wrong;
+  const rate = total > 0 ? Math.round(student.correct / total * 100) : 0;
+
+  const payload = {
+    name: student.name,
+    correct: student.correct,
+    wrong: student.wrong,
+    total, rate,
+    byType: student.byType,
+    ts: Date.now()
+  };
+
+  try{
+    const res = await fetch('/api/score', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    return { ok: true, mode: 'server' };
+  }catch(e){
+    console.error('上传失败：', e);
+    return { ok: false, mode: 'server' };
+  }
+}
+
+async function fetchAllScores(){
+  if(MODE === 'standalone') return null;
+  try{
+    const res = await fetch('/api/scores?_=' + Date.now());
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  }catch(e){
+    return null;
+  }
+}
+async function clearAllScores(){
+  if(MODE === 'standalone') return false;
+  try{
+    const res = await fetch('/api/clear', { method: 'POST' });
+    return res.ok;
+  }catch(e){ return false; }
+}
+async function deleteScore(name){
+  if(MODE === 'standalone') return false;
+  try{
+    const res = await fetch('/api/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+    return res.ok;
+  }catch(e){ return false; }
+}
+
+/* ============================================================
+   单机模式的本地成绩保存
+   ============================================================ */
+const LS_KEY = 'oral_my_scores_v1';
+
+function loadLocalScores(){
+  try{
+    const s = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+    return Array.isArray(s) ? s : [];
+  }catch(e){ return []; }
+}
+function saveLocalScore(student){
+  const list = loadLocalScores();
+  const total = student.correct + student.wrong;
+  const rate = total > 0 ? Math.round(student.correct / total * 100) : 0;
+  const d = new Date();
+  const dateStr =
+    d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0') + ' ' +
+    String(d.getHours()).padStart(2, '0') + ':' +
+    String(d.getMinutes()).padStart(2, '0');
+
+  list.unshift({
+    name: student.name,
+    correct: student.correct,
+    wrong: student.wrong,
+    total, rate,
+    byType: student.byType,
+    ts: Date.now(),
+    date: dateStr
+  });
+  /* 只保留最近 100 条 */
+  if(list.length > 100) list.length = 100;
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(list)); }catch(e){}
+}
+function clearLocalScores(){
+  try{ localStorage.removeItem(LS_KEY); }catch(e){}
+}
+
+/* ============================================================
+   状态
+   ============================================================ */
+let currentStudent = null;
+let curCorrect = 0;
+let curWrong = 0;
+let questionQueue = [];
+let queueIndex = 0;
+
+let currentQuestion = null;
+let currentQType = null;
+let answerInput = "";
+let answerState = "asking";
+let nextTimer = null;
+
+/* ============================================================
+   界面切换
+   ============================================================ */
+function showScreen(name){
+  $("screenLogin").hidden   = (name !== "login");
+  $("screenTest").hidden    = (name !== "test");
+  $("screenDone").hidden    = (name !== "done");
+  $("screenTeacher").hidden = (name !== "teacher");
+}
+
+/* ============================================================
+   学生端流程
+   ============================================================ */
+function studentLogin(){
+  const name = $("loginName").value.trim();
+  if(!name){ alert("请输入姓名"); $("loginName").focus(); return; }
+
+  currentStudent = {
+    name,
+    correct: 0, wrong: 0,
+    byType: {
+      add: { correct:0, wrong:0 },
+      sub: { correct:0, wrong:0 },
+      mixEasy: { correct:0, wrong:0 },
+      mixHard: { correct:0, wrong:0 }
+    }
+  };
+  curCorrect = 0; curWrong = 0;
+
+  const q = [];
+  for(let i = 0; i < cfg.add; i++)     q.push("add");
+  for(let i = 0; i < cfg.sub; i++)     q.push("sub");
+  for(let i = 0; i < cfg.mixEasy; i++) q.push("mixEasy");
+  for(let i = 0; i < cfg.mixHard; i++) q.push("mixHard");
+  questionQueue = shuffle(q);
+  queueIndex = 0;
+
+  $("studentName").textContent = name;
+  updateProgress();
+
+  showScreen("test");
+  speak("请 " + name + " 同学答题");
+  nextQuestion();
+}
+
+function updateProgress(){
+  const total = questionQueue.length;
+  const done = queueIndex;
+  $("progressText").textContent = done + " / " + total;
+  $("progressFill").style.width = total > 0 ? (done / total * 100) + "%" : "0%";
+}
+
+function nextQuestion(){
+  clearTimeout(nextTimer);
+  nextTimer = null;
+  answerState = "asking";
+  answerInput = "";
+
+  $("feedback").textContent = "";
+  $("feedback").className = "feedback";
+  $("ansDisplay").className = "";
+  $("btnSubmit").disabled = false;
+
+  if(queueIndex >= questionQueue.length){ finishStudent(); return; }
+
+  currentQType = questionQueue[queueIndex];
+  queueIndex++;
+
+  currentQuestion = GENERATORS[currentQType]();
+
+  const badge = $("qTypeBadge");
+  badge.textContent = TYPE_NAMES[currentQType];
+  badge.style.background = TYPE_COLORS[currentQType] + "33";
+
+  $("q").textContent = currentQuestion.q;
+  renderInput();
+  updateProgress();
+  speak(currentQuestion.q);
+}
+
+/* 输入 */
+function placeholderText(){
+  if(!currentQuestion) return "点下方键盘输入答案";
+  if(currentQuestion.hasFrac) return "输入最简分数，如 3/4";
+  if(currentQuestion.hasDec)  return "输入小数，如 -3.5";
+  return "输入答案";
+}
+function renderInput(){
+  const box = $("ansDisplay");
+  if(answerInput === ""){
+    box.innerHTML = '<span class="placeholder">' + placeholderText() + '</span>';
+  } else {
+    box.textContent = answerInput;
+  }
+}
+function parseAnswer(str){
+  str = String(str).trim();
+  if(str === "") return NaN;
+  if(str.includes("/")){
+    const parts = str.split("/");
+    if(parts.length !== 2) return NaN;
+    const a = Number(parts[0]);
+    const b = Number(parts[1]);
+    if(!isFinite(a) || !isFinite(b) || b === 0) return NaN;
+    return a / b;
+  }
+  const v = Number(str);
+  return isFinite(v) ? v : NaN;
+}
+function pressKey(d){
+  if(answerState !== "asking") return;
+  if(d === "."){
+    if(answerInput.includes(".") || answerInput.includes("/")) return;
+    if(answerInput === "" || answerInput === "-") answerInput += "0.";
+    else answerInput += ".";
+  } else if(d === "/"){
+    if(answerInput.includes("/") || answerInput.includes(".")) return;
+    if(answerInput === "" || answerInput === "-") return;
+    answerInput += "/";
+  } else {
+    if(answerInput === "0") answerInput = d;
+    else if(answerInput === "-0") answerInput = "-" + d;
+    else answerInput += d;
+  }
+  renderInput();
+}
+function pressNeg(){
+  if(answerState !== "asking") return;
+  if(answerInput.startsWith("-")) answerInput = answerInput.slice(1);
+  else answerInput = "-" + answerInput;
+  renderInput();
+}
+function pressBack(){
+  if(answerState !== "asking") return;
+  answerInput = answerInput.slice(0, -1);
+  renderInput();
+}
+function pressClear(){
+  if(answerState !== "asking") return;
+  answerInput = "";
+  renderInput();
+}
+
+/* 提交 */
+function submitAnswer(){
+  if(answerState === "wrong-last"){ finishStudent(); return; }
+  if(answerState !== "asking"){ nextQuestion(); return; }
+
+  if(answerInput === "" || answerInput === "-" || answerInput === "." ||
+     answerInput === "-." || answerInput.endsWith("/")){
+    $("feedback").textContent = "请先输入答案";
+    $("feedback").className = "feedback warn";
+    return;
+  }
+
+  const val = parseAnswer(answerInput);
+  if(isNaN(val)){
+    $("feedback").textContent = "输入格式有误";
+    $("feedback").className = "feedback warn";
+    return;
+  }
+
+  let eps = 1e-6;
+  if(answerInput.includes(".") && !answerInput.includes("/")) eps = 1e-3;
+
+  const ok = Math.abs(val - currentQuestion.ansVal) < eps;
+  const type = currentQType;
+  const isLast = (queueIndex >= questionQueue.length);
+
+  if(ok){
+    curCorrect++;
+    currentStudent.correct++;
+    currentStudent.byType[type].correct++;
+    answerState = "correct";
+    $("ansDisplay").className = "ok";
+    $("btnSubmit").disabled = true;
+    $("feedback").textContent = "✓ 正确！";
+    $("feedback").className = "feedback ok";
+    speak("正确");
+    updateProgress();
+    if(isLast) nextTimer = setTimeout(finishStudent, 800);
+    else nextTimer = setTimeout(nextQuestion, 900);
+  } else {
+    curWrong++;
+    currentStudent.wrong++;
+    currentStudent.byType[type].wrong++;
+    $("ansDisplay").className = "bad";
+    $("feedback").textContent = "✗ 错了，正确答案是 " + currentQuestion.ansShow;
+    $("feedback").className = "feedback bad";
+    speak("错了，正确答案是 " + currentQuestion.ansShow);
+    updateProgress();
+    if(isLast){
+      answerState = "wrong-last";
+      $("feedback").textContent += "（点「提交」查看成绩）";
+    } else {
+      answerState = "wrong";
+    }
+  }
+}
+
+/* 完成 */
+async function finishStudent(){
+  stopSpeak();
+  const total = currentStudent.correct + currentStudent.wrong;
+  const rate = total > 0 ? Math.round(currentStudent.correct / total * 100) : 0;
+
+  $("overlayName").textContent = currentStudent.name;
+  $("overlayStats").textContent =
+    "答对 " + currentStudent.correct + " 题 · 答错 " + currentStudent.wrong + " 题";
+
+  const rateEl = $("overlayRate");
+  rateEl.textContent = rate + "%";
+  rateEl.className = "overlayRate " +
+    (rate >= 90 ? "ok" : rate >= 75 ? "" : rate >= 60 ? "warn" : "bad");
+
+  $("overlayTip").textContent =
+    rate >= 90 ? "表现优秀！" :
+    rate >= 75 ? "继续努力！" :
+    rate >= 60 ? "需要多加练习" : "建议重点关注";
+
+  const lines = [];
+  ["add","sub","mixEasy","mixHard"].forEach(k => {
+    const d = currentStudent.byType[k];
+    const t = d.correct + d.wrong;
+    if(t === 0) return;
+    const r = Math.round(d.correct / t * 100);
+    lines.push('<div class="row"><span>' + TYPE_SHORT[k] + '</span>' +
+      '<b>' + d.correct + '/' + t + '（' + r + '%）</b></div>');
+  });
+  $("overlayBreakdown").innerHTML = lines.join("");
+
+  /* 单机模式：遮罩按钮文案改为「查看我的记录」 */
+  if(MODE === 'standalone'){
+    $("overlayTitle").textContent = "✓ 本次完成";
+    $("btnOverlayDone").textContent = "查 看 我 的 记 录";
+  } else {
+    $("overlayTitle").textContent = "✓ 完成答题";
+    $("btnOverlayDone").textContent = "完 成";
+  }
+
+  $("overlay").classList.add("show");
+
+  /* 提交/保存 */
+  const bar = $("uploadBar");
+  bar.className = "uploadBar loading show";
+
+  if(MODE === 'standalone'){
+    bar.textContent = "正在保存到本机…";
+    await uploadScore(currentStudent);
+    bar.className = "uploadBar info show";
+    bar.textContent = "✓ 已保存到本机（可在完成页查看历史记录）";
+  } else {
+    bar.textContent = "正在上传成绩…";
+    const result = await uploadScore(currentStudent);
+    if(result.ok){
+      bar.className = "uploadBar ok show";
+      bar.textContent = "✓ 成绩已提交给老师";
+    } else {
+      bar.className = "uploadBar fail show";
+      bar.textContent = "✗ 上传失败，请告知老师";
+    }
+  }
+}
+
+/* ============================================================
+   完成页渲染
+   ============================================================ */
+function renderDoneScreen(){
+  if(!currentStudent){ showScreen("login"); return; }
+
+  const total = currentStudent.correct + currentStudent.wrong;
+  const rate = total > 0 ? Math.round(currentStudent.correct / total * 100) : 0;
+
+  if(MODE === 'standalone'){
+    /* 单机模式：显示本次成绩 + 历史记录 */
+    $("doneText").textContent = "本次成绩已保存到本机";
+    $("doneSelfBox").hidden = false;
+    $("doneSelfSummary").innerHTML =
+      "<b>" + escHtml(currentStudent.name) + "</b> ｜ " +
+      "答对 <b>" + currentStudent.correct + "</b> ｜ " +
+      "答错 <b>" + currentStudent.wrong + "</b> ｜ " +
+      "正确率 <b>" + rate + "%</b>";
+
+    $("historyBox").hidden = false;
+    renderHistoryList();
+  } else {
+    /* 服务器模式：只显示已提交 */
+    $("doneText").textContent = "成绩已提交给老师，请等待指示";
+    $("doneSelfBox").hidden = true;
+    $("historyBox").hidden = true;
+  }
+}
+
+function renderHistoryList(){
+  const list = loadLocalScores();
+  const box = $("historyList");
+
+  if(!list.length){
+    box.innerHTML = '<div class="emptyHist">暂无历史记录</div>';
+    return;
+  }
+
+  const html = list.map((r, i) => {
+    let color = "#dc2626";
+    if(r.rate >= 90) color = "#16a34a";
+    else if(r.rate >= 75) color = "#2563eb";
+    else if(r.rate >= 60) color = "#f59e0b";
+
+    return (
+      '<div class="historyItem">' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div class="hiName">' + escHtml(r.name) + '</div>' +
+          '<div class="hiDate">' + escHtml(r.date) + '</div>' +
+        '</div>' +
+        '<div class="hiRate" style="color:' + color + ';">' + r.rate + '%</div>' +
+        '<button class="hiDel" data-idx="' + i + '">×</button>' +
+      '</div>'
+    );
+  }).join("");
+
+  box.innerHTML = html;
+
+  box.querySelectorAll(".hiDel").forEach(btn => {
+    btn.onclick = () => {
+      const idx = Number(btn.dataset.idx);
+      const list = loadLocalScores();
+      list.splice(idx, 1);
+      try{ localStorage.setItem(LS_KEY, JSON.stringify(list)); }catch(e){}
+      renderHistoryList();
+    };
+  });
+}
+
+/* ============================================================
+   单机模式导出
+   ============================================================ */
+function exportMineCSV(){
+  const list = loadLocalScores();
+  if(!list.length){ alert("还没有任何记录"); return; }
+
+  const rows = [["姓名","答对","答错","总题数","正确率","时间"]];
+  list.forEach(r => {
+    rows.push([r.name, r.correct, r.wrong, r.total, r.rate + "%", r.date]);
+  });
+
+  const csv = rows.map(r => r.map(cell => {
+    const s = String(cell);
+    if(s.includes(",") || s.includes('"') || s.includes("\n")){
+      return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+  }).join(",")).join("\n");
+
+  const d = new Date();
+  const dateStr = d.getFullYear() + "-" +
+    String(d.getMonth() + 1).padStart(2, "0") + "-" +
+    String(d.getDate()).padStart(2, "0");
+
+  const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "我的练习记录_" + dateStr + ".csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* ============================================================
+   老师端（服务器模式）
+   ============================================================ */
+async function refreshTeacherView(){
+  const table = $("resultTable");
+  const summary = $("summary");
+  summary.textContent = "正在加载…";
+
+  const rows = await fetchAllScores();
+  if(rows === null){
+    summary.innerHTML = '<span style="color:#dc2626;">✗ 无法连接到服务器</span>';
+    table.innerHTML = "";
+    return;
+  }
+
+  $("teacherCount").textContent = "（" + rows.length + " 人）";
+
+  if(rows.length === 0){
+    table.innerHTML = "";
+    summary.textContent = "暂无成绩，等待学生提交…";
+    return;
+  }
+
+  rows.sort((a, b) => b.rate - a.rate);
+
+  const html = [];
+  html.push("<thead><tr><th>姓名</th><th>答对</th><th>答错</th><th>正确率</th><th></th></tr></thead>");
+  html.push("<tbody>");
+
+  rows.forEach(r => {
+    let cls = "poor";
+    if(r.rate >= 90) cls = "excellent";
+    else if(r.rate >= 75) cls = "good";
+    else if(r.rate >= 60) cls = "pass";
+
+    html.push(
+      "<tr>" +
+        "<td>" + escHtml(r.name) + "</td>" +
+        "<td>" + r.correct + "</td>" +
+        "<td>" + r.wrong + "</td>" +
+        "<td><span class='rate " + cls + "'>" + r.rate + "%</span></td>" +
+        "<td><button class='delBtn' data-name='" + escHtml(r.name) + "'>删除</button></td>" +
+      "</tr>"
+    );
+  });
+  html.push("</tbody>");
+  table.innerHTML = html.join("");
+
+  table.querySelectorAll(".delBtn").forEach(btn => {
+    btn.onclick = async () => {
+      const name = btn.dataset.name;
+      if(!confirm("确定删除「" + name + "」的成绩吗？")) return;
+      await deleteScore(name);
+      refreshTeacherView();
+    };
+  });
+
+  const totalAll = rows.reduce((s, r) => s + r.total, 0);
+  const correctAll = rows.reduce((s, r) => s + r.correct, 0);
+  const rateAll = totalAll > 0 ? Math.round(correctAll / totalAll * 100) : 0;
+  const excellent = rows.filter(r => r.rate >= 90).length;
+  const poor = rows.filter(r => r.rate < 60).length;
+
+  summary.innerHTML =
+    "提交人数：<b>" + rows.length + "</b> ｜ " +
+    "总题数：<b>" + totalAll + "</b> ｜ " +
+    "总正确：<b>" + correctAll + "</b> ｜ " +
+    "全班正确率：<b>" + rateAll + "%</b><br>" +
+    "优秀（≥90%）：<b>" + excellent + "</b> 人 ｜ " +
+    "待关注（＜60%）：<b>" + poor + "</b> 人";
+}
+
+function exportTeacherCSV(){
+  const table = $("resultTable");
+  const rows = table.querySelectorAll("tbody tr");
+  if(!rows.length){ alert("暂无成绩可导出"); return; }
+
+  const data = [["姓名","答对","答错","总题数","正确率"]];
+  rows.forEach(tr => {
+    const tds = tr.querySelectorAll("td");
+    const name = tds[0].textContent;
+    const correct = Number(tds[1].textContent);
+    const wrong = Number(tds[2].textContent);
+    const rate = tds[3].textContent;
+    data.push([name, correct, wrong, correct + wrong, rate]);
+  });
+
+  const csv = data.map(r => r.map(cell => {
+    const s = String(cell);
+    if(s.includes(",") || s.includes('"') || s.includes("\n")){
+      return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+  }).join(",")).join("\n");
+
+  const d = new Date();
+  const dateStr = d.getFullYear() + "-" +
+    String(d.getMonth() + 1).padStart(2, "0") + "-" +
+    String(d.getDate()).padStart(2, "0");
+
+  const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "全班成绩_" + dateStr + ".csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* ============================================================
+   事件绑定
+   ============================================================ */
+$("keypad").addEventListener("click", e => {
+  const btn = e.target.closest("button");
+  if(!btn) return;
+  const action = btn.dataset.action;
+  const key = btn.dataset.key;
+  if(action === "neg")        pressNeg();
+  else if(action === "back")  pressBack();
+  else if(action === "clear") pressClear();
+  else if(action === "submit") submitAnswer();
+  else if(key !== undefined)  pressKey(key);
+});
+
+document.addEventListener("keydown", e => {
+  if($("screenTest").hidden) return;
+  const tag = e.target.tagName;
+  if(tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+  if(e.key >= "0" && e.key <= "9"){ e.preventDefault(); pressKey(e.key); }
+  else if(e.key === "."){ e.preventDefault(); pressKey("."); }
+  else if(e.key === "/"){ e.preventDefault(); pressKey("/"); }
+  else if(e.key === "-"){ e.preventDefault(); pressNeg(); }
+  else if(e.key === "Backspace"){ e.preventDefault(); pressBack(); }
+  else if(e.key === "Enter"){ e.preventDefault(); submitAnswer(); }
+  else if(e.key.toLowerCase() === "c"){ e.preventDefault(); pressClear(); }
+});
+
+$("btnLogin").onclick = studentLogin;
+$("loginName").addEventListener("keydown", e => {
+  if(e.key === "Enter"){ e.preventDefault(); studentLogin(); }
+});
+
+/* 完成遮罩按钮 */
+$("btnOverlayDone").onclick = () => {
+  $("overlay").classList.remove("show");
+  renderDoneScreen();
+  showScreen("done");
+};
+
+/* 再答一次 */
+$("btnBackToLogin").onclick = () => {
+  showScreen("login");
+  $("loginName").value = "";
+  $("loginName").focus();
+};
+
+/* 单机模式：导出/清空 */
+$("btnExportMine").onclick = exportMineCSV;
+$("btnClearMine").onclick = () => {
+  if(!confirm("确定清空本机的所有练习记录吗？")) return;
+  clearLocalScores();
+  renderHistoryList();
+};
+
+/* 老师端 */
+$("btnRefresh").onclick = refreshTeacherView;
+$("btnExport").onclick = exportTeacherCSV;
+$("btnClearAll").onclick = async () => {
+  if(!confirm("确定清空所有学生的成绩吗？此操作不可恢复！")) return;
+  if(!confirm("再次确认：清空后将无法恢复，是否继续？")) return;
+  const ok = await clearAllScores();
+  if(ok) refreshTeacherView();
+  else alert("清空失败");
+};
+$("btnShowUrl").onclick = () => {
+  const url = location.origin;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(url).then(() => {
+      alert("学生访问地址已复制：\n\n" + url);
+    }).catch(() => alert("学生访问地址：\n\n" + url));
+  } else {
+    alert("学生访问地址：\n\n" + url);
+  }
+};
+
+/* ============================================================
+   启动
+   ============================================================ */
+(async function init(){
+  /* 1. 检测运行模式 */
+  MODE = await detectMode();
+
+  /* 2. 更新登录页提示 */
+  const tip = $("loginTip");
+  if(MODE === 'server'){
+    tip.className = "uploadBar info show";
+    tip.textContent = "机房模式：成绩会自动提交给老师";
+  } else {
+    tip.className = "uploadBar info show";
+    tip.textContent = "练习模式：成绩保存在本机，可自行查看和导出";
+  }
+
+  /* 3. 判断老师端 or 学生端 */
+  const isTeacher = new URLSearchParams(location.search).get("teacher") === "1";
+
+  if(MODE === 'server' && isTeacher){
+    $("pageTitle").textContent = "全班成绩 · 教师端";
+    $("pageSub").textContent = "刷新查看所有学生成绩";
+    showScreen("teacher");
+    refreshTeacherView();
+    setInterval(() => {
+      if(!$("screenTeacher").hidden) refreshTeacherView();
+    }, 10000);
+  } else {
+    /* 学生端 */
+    if(MODE === 'server'){
+      $("pageSub").textContent = "请填写姓名后开始答题（机房模式）";
+    } else {
+      $("pageSub").textContent = "请填写姓名后开始练习（本机保存）";
+    }
+    showScreen("login");
+    $("loginName").focus();
+  }
+})();
+</script>
+</body>
+</html>
