@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>有理数口算抽查 · 进阶版</title>
+<style>
+  :root{
+    --bg:#eef2f9; --card:#fff; --primary:#2563eb;
+    --green:#16a34a; --red:#dc2626; --amber:#f59e0b;
+    --text:#1e293b; --muted:#64748b; --line:#e2e8f0;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0; padding:14px;
+    font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.6;
+    min-height:100vh;
+  }
+  .wrap{max-width:560px;margin:0 auto;}
+
+  header{margin-bottom:14px;padding:0 4px;}
+  header h1{font-size:20px;margin:0 0 2px;}
+  header .sub{font-size:13px;color:var(--muted);margin:0;}
+
+  /* 四个分类：2x2 网格 */
+  .tabs{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px; margin-bottom:14px;
+  }
+  .tab{
+    border:1px solid var(--line); background:#fff; color:var(--muted);
+    padding:11px 6px; border-radius:12px;
+    font-size:14px; font-weight:600; cursor:pointer;
+    transition:.15s; text-align:center;
+  }
+  .tab:active{transform:scale(.97);}
+  .tab.active{
+    background:var(--primary); border-color:var(--primary);
+    color:#fff; box-shadow:0 6px 16px rgba(37,99,235,.28);
+  }
+  /* 难度版标签用不同色调区分 */
+  .tab.hard.active{
+    background:linear-gradient(135deg,#7c3aed,#6d28d9);
+    border-color:#7c3aed;
+    box-shadow:0 6px 16px rgba(124,58,237,.32);
+  }
+
+  .card{
+    background:var(--card); border-radius:18px; padding:20px 18px;
+    box-shadow:0 8px 26px rgba(30,41,59,.08);
+  }
+  .meta{
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:12px; color:var(--muted); margin-bottom:16px;
+  }
+  .meta .tag{
+    background:#eff6ff; color:#2563eb;
+    padding:3px 10px; border-radius:999px; font-weight:600;
+  }
+  .meta .tag.hard{
+    background:#f3e8ff; color:#7c3aed;
+  }
+
+  .q{
+    font-size:clamp(22px,6vw,34px);
+    font-weight:800; letter-spacing:.03em;
+    text-align:center; line-height:1.6;
+    padding:12px 0 18px;
+    word-break:break-word;
+    font-variant-numeric:tabular-nums;
+    min-height:90px;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  #ansDisplay{
+    width:100%;
+    padding:14px 16px;
+    font-size:26px; font-weight:800;
+    text-align:center;
+    border:2px solid var(--line);
+    border-radius:14px;
+    background:#fafafa; color:var(--text);
+    font-variant-numeric:tabular-nums;
+    min-height:62px;
+    display:flex; align-items:center; justify-content:center;
+    transition:.15s;
+    letter-spacing:.04em;
+  }
+  #ansDisplay.ok{border-color:var(--green);background:#f0fdf4;color:var(--green);}
+  #ansDisplay.bad{border-color:var(--red);background:#fef2f2;color:var(--red);}
+  #ansDisplay .placeholder{color:#cbd5e1;font-weight:500;font-size:15px;}
+
+  .feedback{
+    margin-top:12px; min-height:26px;
+    text-align:center; font-size:15px; font-weight:600;
+  }
+  .feedback.ok{color:var(--green);}
+  .feedback.bad{color:var(--red);}
+  .feedback.warn{color:var(--amber);}
+
+  .keypad{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:8px;
+    margin-top:14px;
+  }
+  .key{
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--text);
+    border-radius:14px;
+    padding:0;
+    height:56px;
+    font-size:22px;
+    font-weight:700;
+    cursor:pointer;
+    transition:transform .08s, background .12s;
+    font-variant-numeric:tabular-nums;
+    display:flex; align-items:center; justify-content:center;
+    user-select:none;
+  }
+  .key:active{transform:scale(.94);background:#f1f5f9;}
+  .key.fn{
+    background:#f8fafc;
+    color:var(--muted);
+    font-size:20px;
+  }
+  .key.neg{
+    background:#fff7ed;
+    color:#c2410c;
+    font-size:20px;
+  }
+  .key.back{
+    background:#fef2f2;
+    color:#b91c1c;
+    font-size:22px;
+  }
+  .key.frac{
+    background:#f0fdfa;
+    color:#0d9488;
+    font-size:22px;
+  }
+  .key.submit{
+    background:linear-gradient(135deg,#3b82f6,#2563eb);
+    color:#fff;
+    font-size:16px;
+    letter-spacing:.05em;
+    font-weight:800;
+    box-shadow:0 6px 16px rgba(37,99,235,.32);
+    border:0;
+  }
+  .key.submit:active{background:#1d4ed8;}
+  .key.submit:disabled{opacity:.5;cursor:not-allowed;box-shadow:none;}
+
+  .statRow{
+    display:grid; grid-template-columns:repeat(4,1fr);
+    gap:8px; margin-top:14px;
+  }
+  .stat{
+    background:var(--card); border-radius:14px;
+    padding:12px 6px; text-align:center;
+    box-shadow:0 4px 14px rgba(30,41,59,.06);
+  }
+  .stat .num{
+    font-size:22px; font-weight:800; line-height:1.2;
+    font-variant-numeric:tabular-nums;
+  }
+  .stat .lbl{font-size:11px; color:var(--muted); margin-top:2px;}
+  .stat.good .num{color:var(--green);}
+  .stat.bad .num{color:var(--red);}
+  .stat.streak .num{color:var(--amber);}
+  .stat.rate .num{color:var(--primary);}
+
+  .tools{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px;}
+  .tools button{
+    padding:12px 6px; border-radius:12px;
+    border:1px solid var(--line);
+    background:#fff; color:var(--muted);
+    font-size:14px; font-weight:600; cursor:pointer;
+    transition:.15s;
+  }
+  .tools button:active{transform:scale(.97);}
+  .tools button.on{
+    background:#dbeafe; border-color:#93c5fd; color:#1d4ed8;
+  }
+
+  .tip{
+    text-align:center; font-size:12px;
+    color:#94a3b8; margin:14px 0 4px;
+  }
+
+  @media (max-width:420px){
+    .key{height:52px;font-size:20px;}
+    .stat .num{font-size:19px;}
+    .q{font-size:20px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>有理数口算抽查 · 进阶版</h1>
+    <p class="sub">整数、小数、分数、绝对值</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-cat="add">加法</button>
+    <button class="tab" data-cat="sub">减法</button>
+    <button class="tab" data-cat="mixEasy">混合·简单</button>
+    <button class="tab hard" data-cat="mixHard">混合·难度</button>
+  </div>
+
+  <div class="card">
+    <div class="meta">
+      <span class="tag" id="qtag">有理数的加法</span>
+      <span id="qcount">第 1 题</span>
+    </div>
+    <div class="q" id="q">—</div>
+
+    <div id="ansDisplay"><span class="placeholder">点下方键盘输入答案</span></div>
+
+    <div class="feedback" id="feedback"></div>
+
+    <div class="keypad" id="keypad">
+      <button class="key" data-key="7">7</button>
+      <button class="key" data-key="8">8</button>
+      <button class="key" data-key="9">9</button>
+      <button class="key back" data-action="back">⌫</button>
+
+      <button class="key" data-key="4">4</button>
+      <button class="key" data-key="5">5</button>
+      <button class="key" data-key="6">6</button>
+      <button class="key neg" data-action="neg">±</button>
+
+      <button class="key" data-key="1">1</button>
+      <button class="key" data-key="2">2</button>
+      <button class="key" data-key="3">3</button>
+      <button class="key fn" data-action="clear">C</button>
+
+      <button class="key" data-key="0">0</button>
+      <button class="key" data-key=".">.</button>
+      <button class="key frac" data-key="/">/</button>
+      <button class="key submit" data-action="submit" id="btnSubmit">提交</button>
+    </div>
+  </div>
+
+  <div class="statRow">
+    <div class="stat good">
+      <div class="num" id="statCorrect">0</div>
+      <div class="lbl">正确</div>
+    </div>
+    <div class="stat bad">
+      <div class="num" id="statWrong">0</div>
+      <div class="lbl">错误</div>
+    </div>
+    <div class="stat streak">
+      <div class="num" id="statStreak">0</div>
+      <div class="lbl">连对</div>
+    </div>
+    <div class="stat rate">
+      <div class="num" id="statRate">—</div>
+      <div class="lbl">正确率</div>
+    </div>
+  </div>
+
+  <div class="tools">
+    <button id="btnSkip">跳过</button>
+    <button id="btnReset">重新开始</button>
+    <button id="btnVoice" class="on">🔊 语音开</button>
+  </div>
+
+  <p class="tip">回车提交 · Esc 跳过 · / 键输入分数</p>
+
+</div>
+
+<script>
+/* ========================================================
+   基础工具
+   ======================================================== */
+const $ = id => document.getElementById(id);
+
+function randInt(min, max){
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function nonZero(min, max){
+  let v = 0;
+  while(v === 0) v = randInt(min, max);
+  return v;
+}
+function gcd(a, b){
+  a = Math.abs(a); b = Math.abs(b);
+  while(b){ const t = b; b = a % b; a = t; }
+  return a || 1;
+}
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* ========================================================
+   数字生成
+   --------------------------------------------------------
+   统一结构：
+     整数  { kind:'int',  val }
+     小数  { kind:'dec',  val, show:'x.y' }
+     分数  { kind:'frac', n, d, val }   （已化简，d>0）
+   ======================================================== */
+
+/* ---------- 简单版整数：-20 ~ 20（不含 0） ---------- */
+function makeInt1(){
+  return { kind:'int', val: nonZero(-20, 20) };
+}
+
+/* ---------- 难度版整数：-10 ~ 10（不含 0） ---------- */
+function makeInt2(){
+  return { kind:'int', val: nonZero(-10, 10) };
+}
+
+/* ---------- 难度版小数：-9.9 ~ 9.9，一位小数 ---------- */
+function makeDec2(){
+  let v;
+  do {
+    const sign = Math.random() < 0.5 ? -1 : 1;
+    const i = randInt(0, 9);
+    const d = randInt(1, 9);
+    v = sign * (i + d / 10);
+  } while(Math.abs(v) < 0.05);
+  v = Math.round(v * 10) / 10;
+  return { kind:'dec', val: v, show: v.toFixed(1) };
+}
+
+/* ---------- 难度版分数：分子 -9~9，分母 2~6 ---------- */
+function makeFrac2(){
+  const dens = [2, 3, 4, 5, 6];
+  const d = dens[randInt(0, dens.length - 1)];
+  let n = nonZero(-9, 9);
+  const g = gcd(n, d);
+  n = n / g;
+  const dd = d / g;
+  if(dd === 1) return { kind:'int', val: n };
+  return { kind:'frac', n: n, d: dd, val: n / dd };
+}
+
+/* ========================================================
+   分数运算工具
+   ======================================================== */
+function toFrac(num){
+  if(num.kind === 'int') return { n: num.val, d: 1 };
+  if(num.kind === 'dec') return { n: Math.round(num.val * 10), d: 10 };
+  return { n: num.n, d: num.d };
+}
+function simp(f){
+  let { n, d } = f;
+  if(d < 0){ n = -n; d = -d; }
+  const g = gcd(n, d);
+  return { n: n / g, d: d / g };
+}
+function fracAdd(a, b){
+  return simp({ n: a.n * b.d + b.n * a.d, d: a.d * b.d });
+}
+function fracSub(a, b){
+  return simp({ n: a.n * b.d - b.n * a.d, d: a.d * b.d });
+}
+
+/* ========================================================
+   显示工具
+   ======================================================== */
+function numText(num){
+  if(num.kind === 'int') return String(num.val);
+  if(num.kind === 'dec') return num.show;
+  return num.n + "/" + num.d;
+}
+
+/* 普通数字（可能在括号里） */
+function showNum(num, first){
+  const text = numText(num);
+  if(!first && num.val < 0) return "(" + text + ")";
+  return text;
+}
+
+/* 答案格式化 */
+function showAns(resFrac, hasFrac, hasDec){
+  resFrac = simp(resFrac);
+  if(hasFrac){
+    if(resFrac.d === 1) return String(resFrac.n);
+    return resFrac.n + "/" + resFrac.d;
+  }
+  if(hasDec){
+    if(resFrac.d === 1) return String(resFrac.n);
+    const v = resFrac.n / resFrac.d;
+    let str = v.toFixed(2);
+    str = str.replace(/\.?0+$/, '');
+    return str;
+  }
+  return String(resFrac.n / resFrac.d);
+}
+
+/* ========================================================
+   出题 —— 加法（-20 ~ 20 整数）
+   ======================================================== */
+function genAdd(){
+  const t = Math.random();
+  let a, b;
+  if(t < 0.35){ a = randInt(1, 20); b = randInt(1, 20); }
+  else if(t < 0.65){ a = -randInt(1, 20); b = -randInt(1, 20); }
+  else if(t < 0.85){ a = randInt(1, 20); b = -randInt(1, 20); }
+  else { a = -randInt(1, 20); b = randInt(1, 20); }
+  return {
+    q: (a < 0 ? "(" + a + ")" : a) + " + " + (b < 0 ? "(" + b + ")" : b),
+    ansVal: a + b,
+    ansShow: String(a + b),
+    hasFrac: false,
+    hasDec: false,
+    cat: "有理数的加法"
+  };
+}
+
+/* ========================================================
+   出题 —— 减法（-20 ~ 20 整数）
+   ======================================================== */
+function genSub(){
+  const t = Math.random();
+  let a, b;
+  if(t < 0.3){ a = randInt(1, 20); b = randInt(1, 20); }
+  else if(t < 0.55){ a = -randInt(1, 20); b = randInt(1, 20); }
+  else if(t < 0.8){ a = randInt(1, 20); b = -randInt(1, 20); }
+  else { a = -randInt(1, 20); b = -randInt(1, 20); }
+  return {
+    q: (a < 0 ? "(" + a + ")" : a) + " - " + (b < 0 ? "(" + b + ")" : b),
+    ansVal: a - b,
+    ansShow: String(a - b),
+    hasFrac: false,
+    hasDec: false,
+    cat: "有理数的减法"
+  };
+}
+
+/* ========================================================
+   出题 —— 混合·简单（-20 ~ 20 整数，三个数）
+   ======================================================== */
+function genMixEasy(){
+  let a = nonZero(-20, 20);
+  let b = nonZero(-20, 20);
+  let c = nonZero(-20, 20);
+
+  if(a > 0 && b > 0 && c > 0){
+    const pick = randInt(0, 2);
+    if(pick === 0) a = -a;
+    else if(pick === 1) b = -b;
+    else c = -c;
+  }
+
+  const mode = randInt(0, 2);
+  const A = a < 0 ? "(" + a + ")" : a;
+  const B = b < 0 ? "(" + b + ")" : b;
+  const C = c < 0 ? "(" + c + ")" : c;
+
+  let q, ans;
+  if(mode === 0){ q = A + " + " + B + " - " + C; ans = a + b - c; }
+  else if(mode === 1){ q = A + " - " + B + " + " + C; ans = a - b + c; }
+  else { q = A + " - " + B + " - " + C; ans = a - b - c; }
+
+  return {
+    q: q,
+    ansVal: ans,
+    ansShow: String(ans),
+    hasFrac: false,
+    hasDec: false,
+    cat: "有理数混合运算 · 简单"
+  };
+}
+
+/* ========================================================
+   出题 —— 混合·难度
+   --------------------------------------------------------
+   特点：
+   1. 范围 -10 ~ 10
+   2. 随机包含小数或分数（同题只用一种）
+   3. 随机包含 1~2 个绝对值项
+   ======================================================== */
+function genMixHard(){
+  /* 1. 决定本题用哪种数字类型 */
+  const flavor = Math.random();
+  let numGen, hasDec = false, hasFrac = false, kindName = "";
+  if(flavor < 0.35){
+    numGen = makeInt2;
+    kindName = "整数+绝对值";
+  } else if(flavor < 0.7){
+    numGen = makeDec2;
+    hasDec = true;
+    kindName = "小数+绝对值";
+  } else {
+    numGen = makeFrac2;
+    hasFrac = true;
+    kindName = "分数+绝对值";
+  }
+
+  /* 2. 生成 3 个数字，标记哪些带绝对值 */
+  const nums = [numGen(), numGen(), numGen()];
+  const absCount = randInt(1, 2);
+  const absIdx = shuffle([0, 1, 2]).slice(0, absCount);
+
+  /* 3. 计算并生成显示文本 */
+  const modes = [
+    ["+", "-"],
+    ["-", "+"],
+    ["-", "-"]
+  ];
+  const signs = modes[randInt(0, 2)];
+
+  let cur = null;
+  let q = "";
+
+  for(let i = 0; i < 3; i++){
+    const num = nums[i];
+    const isAbs = absIdx.includes(i);
+
+    const text = numText(num);
+    let disp;
+    if(isAbs){
+      disp = "|" + text + "|";
+    } else {
+      if(i === 0) disp = text;
+      else disp = num.val < 0 ? "(" + text + ")" : text;
+    }
+
+    let f = toFrac(num);
+    if(isAbs) f = { n: Math.abs(f.n), d: f.d };
+
+    if(i === 0){
+      cur = f;
+      q = disp;
+    } else {
+      const sign = signs[i - 1];
+      q += " " + sign + " " + disp;
+      if(sign === "+") cur = fracAdd(cur, f);
+      else cur = fracSub(cur, f);
+    }
+  }
+
+  const ansFrac = simp(cur);
+  const ansShow = showAns(ansFrac, hasFrac, hasDec);
+
+  return {
+    q: q,
+    ansVal: ansFrac.n / ansFrac.d,
+    ansShow: ansShow,
+    hasFrac: hasFrac,
+    hasDec: hasDec,
+    cat: "有理数混合运算 · 难度（" + kindName + "）"
+  };
+}
+
+/* ========================================================
+   语音
+   ======================================================== */
+let voiceOn = true;
+let voices = [];
+
+function refreshVoices(){
+  if(!("speechSynthesis" in window)) return;
+  voices = window.speechSynthesis.getVoices() || [];
+}
+if("speechSynthesis" in window){
+  refreshVoices();
+  window.speechSynthesis.onvoiceschanged = refreshVoices;
+}
+function pickVoice(){
+  return voices.find(v => /zh[-_]CN/i.test(v.lang))
+      || voices.find(v => /^zh/i.test(v.lang))
+      || null;
+}
+
+/* ========================================================
+   语音文本预处理
+   --------------------------------------------------------
+   区分“减号”和“负号”的读音：
+   - 二元减法：前面是数字/字母/右括号/汉字 → 读 “减”
+   - 一元负号：位于开头或运算符后        → 读 “负”
+   加号同理：
+   - 二元加法：读 “加”
+   - 一元正号：读 “正”
+   ======================================================== */
+function toSpeech(text){
+  let t = String(text);
+
+  /* ① 绝对值 |x| → x的绝对值（必须在去括号之前做） */
+  t = t.replace(/\|([^|]+)\|/g, "$1的绝对值");
+
+  /* ② 去掉所有括号：(-3) → -3 */
+  t = t.replace(/[()（）\[\]【】]/g, "");
+
+  /* ③ 分数：-3/4 → 负4分之3； 3/4 → 4分之3 */
+  t = t.replace(/-(\d+)\s*\/\s*(\d+)/g, "负$2分之$1");
+  t = t.replace(/(\d+)\s*\/\s*(\d+)/g, "$2分之$1");
+
+  /* ④ 处理 + 和 - 的读音
+     ---------------------------------------------
+     判断规则：看它左边第一个非空格字符
+       - 是数字/字母/右括号/汉字  → 左边是一个“数”，+ 读“加”，- 读“减”
+       - 是开头/运算符/左括号     → 是一个“符号”，+ 读“正”，- 读“负”
+     --------------------------------------------- */
+  t = t.replace(/[-+]/g, function(m, offset, str){
+    const before = str.slice(0, offset).replace(/\s+$/, "");
+    if(before.length === 0){
+      return m === "-" ? "负" : "正";
+    }
+    const last = before[before.length - 1];
+    // 数字、英文字母、右括号、汉字 都算“数”的结尾
+    const isNumberEnd = /[0-9A-Za-z)\]}）】\u4e00-\u9fa5]/.test(last);
+    if(!isNumberEnd){
+      return m === "-" ? "负" : "正";
+    }
+    return m === "-" ? "减" : "加";
+  });
+
+  /* ⑤ 其他符号 */
+  t = t.replace(/±/g, "正负");
+  t = t.replace(/℃/g, "摄氏度");
+  t = t.replace(/×/g, "乘");
+  t = t.replace(/÷/g, "除以");
+  t = t.replace(/≥/g, "大于等于");
+  t = t.replace(/≤/g, "小于等于");
+  t = t.replace(/≠/g, "不等于");
+  t = t.replace(/≈/g, "约等于");
+  t = t.replace(/=/g, "等于");
+  t = t.replace(/²/g, "的平方");
+  t = t.replace(/³/g, "的立方");
+
+  /* ⑥ 合并多余空格 */
+  return t.replace(/\s+/g, " ").trim();
+}
+
+function speak(text){
+  if(!voiceOn) return;
+  if(!("speechSynthesis" in window)) return;
+  const t = toSpeech(text);
+  if(!t) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(t);
+  u.lang = "zh-CN";
+  const v = pickVoice();
+  if(v) u.voice = v;
+  u.rate = 1; u.pitch = 1; u.volume = 1;
+  setTimeout(() => window.speechSynthesis.speak(u), 60);
+}
+function stopSpeak(){
+  if("speechSynthesis" in window) window.speechSynthesis.cancel();
+}
+
+/* ========================================================
+   状态
+   ======================================================== */
+let cat = "add";
+let current = null;
+let state = "asking";
+let nextTimer = null;
+let input = "";
+
+let stats = { correct:0, wrong:0, streak:0, best:0, total:0 };
+
+function loadStats(){
+  try{
+    const s = JSON.parse(localStorage.getItem("mt_oral_v4") || "null");
+    if(s && typeof s === "object"){
+      stats.correct = Number(s.correct) || 0;
+      stats.wrong   = Number(s.wrong)   || 0;
+      stats.streak  = Number(s.streak)  || 0;
+      stats.best    = Number(s.best)    || 0;
+      stats.total   = Number(s.total)   || 0;
+    }
+  }catch(e){}
+}
+function saveStats(){
+  try{ localStorage.setItem("mt_oral_v4", JSON.stringify(stats)); }catch(e){}
+}
+
+/* ========================================================
+   输入
+   ======================================================== */
+function placeholderText(){
+  if(!current) return "点下方键盘输入答案";
+  if(current.hasFrac) return "输入最简分数，如 3/4";
+  if(current.hasDec)  return "输入小数，如 -3.5";
+  return "输入答案";
+}
+
+function renderInput(){
+  const box = $("ansDisplay");
+  if(input === ""){
+    box.innerHTML = '<span class="placeholder">' + placeholderText() + '</span>';
+  } else {
+    box.textContent = input;
+  }
+}
+
+function parseAnswer(str){
+  str = String(str).trim();
+  if(str === "") return NaN;
+  if(str.includes("/")){
+    const parts = str.split("/");
+    if(parts.length !== 2) return NaN;
+    const a = Number(parts[0]);
+    const b = Number(parts[1]);
+    if(!isFinite(a) || !isFinite(b) || b === 0) return NaN;
+    return a / b;
+  }
+  const v = Number(str);
+  return isFinite(v) ? v : NaN;
+}
+
+function pressKey(d){
+  if(state !== "asking") return;
+
+  if(d === "."){
+    if(input.includes(".") || input.includes("/")) return;
+    if(input === "" || input === "-") input += "0.";
+    else input += ".";
+  } else if(d === "/"){
+    if(input.includes("/") || input.includes(".")) return;
+    if(input === "" || input === "-") return;
+    input += "/";
+  } else {
+    if(input === "0") input = d;
+    else if(input === "-0") input = "-" + d;
+    else input += d;
+  }
+  renderInput();
+}
+
+function pressNeg(){
+  if(state !== "asking") return;
+  if(input.startsWith("-")) input = input.slice(1);
+  else input = "-" + input;
+  renderInput();
+}
+function pressBack(){
+  if(state !== "asking") return;
+  input = input.slice(0, -1);
+  renderInput();
+}
+function pressClear(){
+  if(state !== "asking") return;
+  input = "";
+  renderInput();
+}
+
+/* ========================================================
+   出题
+   ======================================================== */
+function nextQuestion(){
+  clearTimeout(nextTimer);
+  nextTimer = null;
+  state = "asking";
+  input = "";
+
+  $("feedback").textContent = "";
+  $("feedback").className = "feedback";
+  $("ansDisplay").className = "";
+  $("btnSubmit").disabled = false;
+
+  if(cat === "add")            current = genAdd();
+  else if(cat === "sub")       current = genSub();
+  else if(cat === "mixEasy")   current = genMixEasy();
+  else                         current = genMixHard();
+
+  const tag = $("qtag");
+  tag.textContent = current.cat;
+  tag.classList.toggle("hard", cat === "mixHard");
+
+  $("qcount").textContent = "第 " + (stats.total + 1) + " 题";
+  $("q").textContent = current.q;
+
+  renderInput();
+  speak(current.q);
+}
+
+function submit(){
+  if(state === "asking"){
+    if(input === "" || input === "-" || input === "." || input === "-." || input.endsWith("/")){
+      $("feedback").textContent = "请先输入答案";
+      $("feedback").className = "feedback warn";
+      return;
+    }
+
+    const val = parseAnswer(input);
+    if(isNaN(val)){
+      $("feedback").textContent = "输入格式有误，请检查";
+      $("feedback").className = "feedback warn";
+      return;
+    }
+
+    let eps = 1e-6;
+    if(input.includes(".") && !input.includes("/")) eps = 1e-3;
+
+    const ok = Math.abs(val - current.ansVal) < eps;
+
+    if(ok){
+      stats.correct++;
+      stats.total++;
+      stats.streak++;
+      if(stats.streak > stats.best) stats.best = stats.streak;
+      saveStats();
+
+      state = "correct";
+      $("ansDisplay").className = "ok";
+      $("btnSubmit").disabled = true;
+      $("feedback").textContent = "✓ 正确！";
+      $("feedback").className = "feedback ok";
+      speak("正确");
+      updateStats();
+
+      nextTimer = setTimeout(nextQuestion, 900);
+    } else {
+      stats.wrong++;
+      stats.total++;
+      stats.streak = 0;
+      saveStats();
+
+      state = "wrong";
+      $("ansDisplay").className = "bad";
+      $("feedback").textContent = "✗ 错了，正确答案是 " + current.ansShow;
+      $("feedback").className = "feedback bad";
+      $("qcount").textContent = "第 " + stats.total + " 题";
+      speak("错了，正确答案是 " + current.ansShow);
+      updateStats();
+    }
+  } else {
+    nextQuestion();
+  }
+}
+
+/* ========================================================
+   统计
+   ======================================================== */
+function updateStats(){
+  $("statCorrect").textContent = stats.correct;
+  $("statWrong").textContent = stats.wrong;
+  $("statStreak").textContent = stats.streak;
+  if(stats.total > 0){
+    const rate = Math.round(stats.correct / stats.total * 100);
+    $("statRate").textContent = rate + "%";
+  } else {
+    $("statRate").textContent = "—";
+  }
+}
+
+/* ========================================================
+   事件
+   ======================================================== */
+$("keypad").addEventListener("click", e => {
+  const btn = e.target.closest("button");
+  if(!btn) return;
+  const action = btn.dataset.action;
+  const key = btn.dataset.key;
+
+  if(action === "neg")        pressNeg();
+  else if(action === "back")  pressBack();
+  else if(action === "clear") pressClear();
+  else if(action === "submit") submit();
+  else if(key !== undefined)  pressKey(key);
+});
+
+document.addEventListener("keydown", e => {
+  const tag = e.target.tagName;
+  if(tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
+  if(e.key >= "0" && e.key <= "9"){ e.preventDefault(); pressKey(e.key); }
+  else if(e.key === "."){ e.preventDefault(); pressKey("."); }
+  else if(e.key === "/"){ e.preventDefault(); pressKey("/"); }
+  else if(e.key === "-"){ e.preventDefault(); pressNeg(); }
+  else if(e.key === "Backspace"){ e.preventDefault(); pressBack(); }
+  else if(e.key === "Enter"){ e.preventDefault(); submit(); }
+  else if(e.key === "Escape"){ e.preventDefault(); $("btnSkip").click(); }
+  else if(e.key.toLowerCase() === "c"){ e.preventDefault(); pressClear(); }
+});
+
+$("btnSkip").onclick = () => {
+  stats.streak = 0;
+  saveStats();
+  updateStats();
+  stopSpeak();
+  nextQuestion();
+};
+
+$("btnReset").onclick = () => {
+  if(!confirm("确定清空所有成绩，重新开始吗？")) return;
+  stats = { correct:0, wrong:0, streak:0, best:0, total:0 };
+  saveStats();
+  updateStats();
+  stopSpeak();
+  nextQuestion();
+};
+
+$("btnVoice").onclick = () => {
+  voiceOn = !voiceOn;
+  $("btnVoice").classList.toggle("on", voiceOn);
+  $("btnVoice").textContent = voiceOn ? "🔊 语音开" : "🔇 语音关";
+  if(!voiceOn) stopSpeak();
+};
+
+document.querySelectorAll(".tab").forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    cat = btn.dataset.cat;
+    stopSpeak();
+    nextQuestion();
+  };
+});
+
+document.addEventListener("visibilitychange", () => {
+  if(document.hidden) stopSpeak();
+});
+
+/* ========================================================
+   启动
+   ======================================================== */
+loadStats();
+updateStats();
+nextQuestion();
+</script>
+</body>
+</html>
