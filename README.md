@@ -233,10 +233,10 @@
             <div class="farrow">›</div>
           </a>
 
-          <a class="funcItem" href="kuosuanceshi.html">
+          <a class="funcItem" href="kousuanceshi.html">
             <div class="ficon c2">🔢</div>
             <div class="ftext">
-              <div class="ftitle">计算过关</div>
+              <div class="ftitle">口算过关</div>
               <div class="fdesc">有理数加减法口算，逐步提升</div>
             </div>
             <div class="farrow">›</div>
@@ -245,7 +245,7 @@
           <a class="funcItem" href="shuxueceshi.html">
             <div class="ficon c3">📝</div>
             <div class="ftext">
-              <div class="ftitle">计算测试</div>
+              <div class="ftitle">限时计算测试</div>
               <div class="fdesc">限时计算，记录正确率</div>
             </div>
             <div class="farrow">›</div>
